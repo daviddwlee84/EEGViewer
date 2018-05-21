@@ -133,7 +133,7 @@ classdef EEGViewer < handle
 
             figure
             s = surf(xx, yy, zz);
-            title('Single-Sided Amplitude Spectrum of X(t)')
+            title(['Single-Sided Amplitude Spectrum of channel ', num2str(channel)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
             zlabel('|P1(f)|')
@@ -184,7 +184,7 @@ classdef EEGViewer < handle
 
             figure
             s = surf(xx, yy, zz);
-            title(['Single-Sided Amplitude Spectrum of channel ' num2str(channel)])
+            title(['Single-Sided Amplitude Spectrum of channel ', num2str(channel), ' (Reuse version)'])
             xlabel('f (Hz)')
             ylabel('t (sec)')
             zlabel('|P1(f)|')
