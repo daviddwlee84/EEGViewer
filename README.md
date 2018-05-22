@@ -6,7 +6,7 @@ Electroencephalography signal analysis and visualization
 
 - [X] Load data
 - [X] Plot single signal
-- [ ] Plot two signal symmetrically
+- [X] Plot two signal symmetrically
 
 ## Related Links
 
