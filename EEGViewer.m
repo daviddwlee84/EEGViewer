@@ -32,6 +32,9 @@ classdef EEGViewer < handle
         
         %> Number of channels
         numchannels
+
+        %> Channel names
+        channelNames
         
     end
     
@@ -64,7 +67,8 @@ classdef EEGViewer < handle
             obj.numchannels = Header.numchannels; % Number of channels
             
             obj.RawData = Data;
-            
+
+            obj.channelNames = Header.channels
             
         end
         % ======================================================================
@@ -134,7 +138,7 @@ classdef EEGViewer < handle
 
             figure
             s = surf(xx, yy, zz);
-            title(['Single-Sided Amplitude Spectrum of channel ', num2str(channel)])
+            title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
             zlabel('|P1(f)|')
@@ -185,7 +189,7 @@ classdef EEGViewer < handle
 
             figure
             s = surf(xx, yy, zz);
-            title(['Single-Sided Amplitude Spectrum of channel ', num2str(channel), ' (Reuse version)'])
+            title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3), ' (Reuse version)'])
             xlabel('f (Hz)')
             ylabel('t (sec)')
             zlabel('|P1(f)|')
@@ -237,7 +241,7 @@ classdef EEGViewer < handle
 
             figure
             s = surf(xx, yy, zz);
-            title(['Comparison of channel ', num2str(channel1), ' and ', num2str(channel2)])
+            title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
             zlabel('|P1(f)|')
