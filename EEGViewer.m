@@ -7,6 +7,10 @@ classdef EEGViewer < handle
         %> Data
         Data
         
+        %> File
+        Filepath
+        Filename
+        
         %> Sampling frequency
         Fs
         %> Sampling period
@@ -59,6 +63,8 @@ classdef EEGViewer < handle
             
             obj.Data = data;
             
+            [obj.Filepath, obj.Filename] = fileparts(path);
+            
             % Initial properties
             obj.Fs = header.samplingrate;   % Sampling frequency
             obj.T = 1/obj.Fs;               % Sampling period (1 us)
@@ -72,6 +78,14 @@ classdef EEGViewer < handle
             
             obj.numchannels = header.numchannels; % Number of channels
             obj.channelNames = header.channels;   % Channel names
+        end
+        
+        % ======================================================================
+        %> @brief Scroll view on data
+        %>
+        % ======================================================================
+        function ScrollView(obj)
+            eegplot(obj.Data, 'srate', obj.Fs, 'title', 'Scroll View', 'plottitle', ['Scroll view on data of ', obj.Filename], 'xgrid', 'on', 'ygrid', 'on')
         end
         
         % ======================================================================

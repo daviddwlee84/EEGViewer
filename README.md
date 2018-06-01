@@ -4,6 +4,8 @@ Electroencephalography signal analysis and visualization
 
 ## Basic Usage
 
+### Simple procedure
+
 1. Input Data
 
     ```matlab
@@ -29,6 +31,12 @@ Electroencephalography signal analysis and visualization
     viewer.PlotSingleSignal(channel)            % Plot single signal spectrum
     viewer.PlotSingleSignalReuse(channel)       % Plot single signal spectrum (reuse some data to make it more dense)
     viewer.PlotDoubleSignal(channel1, channel2) % Plot two signal spectrum symmetrically
+    ```
+
+* Quick view of data
+
+    ```matlab
+    viewer.ScrollView()
     ```
 
 ## EEG Notes
@@ -58,7 +66,7 @@ Electroencephalography signal analysis and visualization
 - [X] Plot two signal symmetrically
 - [X] Add channel label
 - [X] Add FIR Filter (EEGLAB function)
-- [ ] Add quick data viewer (EEGLAB function)
+- [X] Add quick data viewer (EEGLAB function)
 
 ## Other's function used
 
@@ -67,6 +75,9 @@ Electroencephalography signal analysis and visualization
 ### EEGLAB
 
 * eegfilt.m - FIR Filter
+* eegplot.m - Scroll view on raw data
+* textsc.m - Places text in screen coordinates
+* fastif.m - Fast if
 
 ## Related Links
 

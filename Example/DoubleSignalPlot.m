@@ -3,7 +3,9 @@ close all
 
 viewer = EEGViewer('Example/testdata.edf');
 
+%viewer.ScrollView(); % Before Filtering
 viewer.FIRfiltering(1, 30);
+%viewer.ScrollView(); % After Filtering
 
 % same signal
 viewer.PlotDoubleSignal(3, 3);
