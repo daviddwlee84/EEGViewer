@@ -1,6 +1,7 @@
-[data, header] = read_edf('Example/testdata.edf');
+% close all figure
+close all
 
-viewer = EEGViewer(data, header);
+viewer = EEGViewer('Example/testdata.edf');
 
 viewer.FIRfiltering(1, 30);
 
@@ -8,6 +9,6 @@ viewer.FIRfiltering(1, 30);
 viewer.PlotDoubleSignal(3, 3);
 
 % show all signal
-for i = 1:2:header.numchannels
+for i = 1:2:viewer.numchannels
     viewer.PlotDoubleSignal(i, i+1);
 end

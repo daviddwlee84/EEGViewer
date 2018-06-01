@@ -1,6 +1,6 @@
-[data, header] = read_edf('Example/testdata.edf');
+close all
 
-viewer = EEGViewer(data, header);
+viewer = EEGViewer('Example/testdata.edf');
 
 viewer.FIRfiltering(1, 30);
 

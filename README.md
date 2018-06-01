@@ -7,10 +7,18 @@ Electroencephalography signal analysis and visualization
 1. Input Data
 
     ```matlab
-    [data, header] = read_edf('path/to/your/data.edf');
-    viewer = EEGViewer(data, header);
+    viewer = EEGViewer('path/to/your/data.edf');
     ```
+
+    or
+
+    ```matlab
+    viewer = EEGViewer();
+    viewer.Load('path/to/your/data.edf')
+    ```
+
 2. Filtering (Optional)
+
     ```matlab
     viewer.FIRfiltering(1, 30); % Band-pass FIR filter of 1~30 Hz
     ```

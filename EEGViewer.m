@@ -4,8 +4,8 @@ classdef EEGViewer < handle
     
     
     properties
-        %> Raw data
-        RawData
+        %> Data
+        Data
         
         %> Sampling frequency
         Fs
@@ -26,32 +26,43 @@ classdef EEGViewer < handle
         %> Total iteration
         totalrun
 
-        
-        
         %> Number of channels
         numchannels
 
         %> Channel names
         channelNames
-        
     end
     
     methods
         % ======================================================================
         %> @brief Class constructor
         %>
-        %> Load processed *.edf file
-        %>
-        %> @param Data Signal raw data
-        %> @param Header Processed header
-        %>
+        %> @param path (Optional) Path to the *.edf file.
         %> @return instance of the EEGViewer class.
         % ======================================================================
-        function obj = EEGViewer(Data, Header)
+        function obj = EEGViewer(path)
+            % Add ./functions subpath to PATH
+            addpath(genpath(fullfile(pwd, 'functions')))
+            if nargin == 1
+                obj.Load(path);
+            end;
+        end
+        
+        % ======================================================================
+        %> @brief Load *.edf Data
+        %>
+        %> @param path Path to the *.edf file.
+        % ======================================================================        
+        function Load(obj, path)
+            
+            [data, header] = read_edf(path);
+            
+            obj.Data = data;
+            
             % Initial properties
-            obj.Fs = Header.samplingrate;   % Sampling frequency
+            obj.Fs = header.samplingrate;   % Sampling frequency
             obj.T = 1/obj.Fs;               % Sampling period (1 us)
-            obj.L = Header.numtimeframes;   % Length of signal
+            obj.L = header.numtimeframes;   % Length of signal
             obj.t = (0:obj.L-1)*obj.T;      % Time vector
 
             obj.rng = 1000; % Proceed fft every rng data
@@ -59,23 +70,19 @@ classdef EEGViewer < handle
 
             obj.dps = obj.Fs/obj.rng/2; % Data per seconds
             
-            
-            obj.numchannels = Header.numchannels; % Number of channels
-            
-            obj.RawData = Data;
-
-            obj.channelNames = Header.channels;
-            
+            obj.numchannels = header.numchannels; % Number of channels
+            obj.channelNames = header.channels;   % Channel names
         end
+        
         % ======================================================================
-        %> @brief Plot Signal Signal
+        %> @brief Band-pass filter data using two-way least-squares FIR filtering
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param min_filter instance of the EEGViewer class.
         %> @param max_filter instance of the EEGViewer class.
         % ======================================================================
         function FIRfiltering(obj, min_filter, max_filter)
-            obj.RawData = eegfilt(obj.RawData, obj.Fs, min_filter, max_filter);
+            obj.Data = eegfilt(obj.Data, obj.Fs, min_filter, max_filter);
         end
         
         % ======================================================================
@@ -91,7 +98,7 @@ classdef EEGViewer < handle
             obj.totalrun = obj.L/obj.rng; % Total iteration
             for channel = 1:obj.numchannels
                 for i = 1:obj.totalrun
-                    Y(channel, i, :) = fft(obj.RawData(channel, 1+obj.rng*(i-1):obj.rng*i));
+                    Y(channel, i, :) = fft(obj.Data(channel, 1+obj.rng*(i-1):obj.rng*i));
                     P2(channel, i, :) = abs(Y(channel, i, :));
                     P1(channel, i, :) = P2(channel, i, 1:obj.rng/2+1);
                     P1(channel, i, 2:end-1) = 2*P1(channel, i, 2:end-1);
@@ -114,7 +121,7 @@ classdef EEGViewer < handle
             obj.totalrun = obj.L/obj.rng*2-1; % Total iteration
             for channel = 1:obj.numchannels
                 for i = 1:obj.totalrun
-                    Y(channel, i, :) = fft(obj.RawData(channel, 1+obj.rng*((i-1)/2):obj.rng*(i-1)/2+1000));
+                    Y(channel, i, :) = fft(obj.Data(channel, 1+obj.rng*((i-1)/2):obj.rng*(i-1)/2+1000));
                     P2(channel, i, :) = abs(Y(channel, i, :));
                     P1(channel, i, :) = P2(channel, i, 1:obj.rng/2+1);
                     P1(channel, i, 2:end-1) = 2*P1(channel, i, 2:end-1);
