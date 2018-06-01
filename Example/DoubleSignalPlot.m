@@ -2,6 +2,8 @@
 
 viewer = EEGViewer(data, header);
 
+viewer.FIRfiltering(1, 30);
+
 % same signal
 viewer.PlotDoubleSignal(3, 3);
 

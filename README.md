@@ -10,12 +10,17 @@ Electroencephalography signal analysis and visualization
     [data, header] = read_edf('path/to/your/data.edf');
     viewer = EEGViewer(data, header);
     ```
-2. Plot
+2. Filtering (Optional)
+    ```matlab
+    viewer.FIRfiltering(1, 30); % Band-pass FIR filter of 1~30 Hz
+    ```
+
+3. Plot
 
     ```matlab
-    PlotSingleSignal(channel)            % Plot single signal spectrum
-    PlotSingleSignalReuse(channel)       % Plot single signal spectrum (reuse some data to make it more dense)
-    PlotDoubleSignal(channel1, channel2) % Plot two signal spectrum symmetrically
+    viewer.PlotSingleSignal(channel)            % Plot single signal spectrum
+    viewer.PlotSingleSignalReuse(channel)       % Plot single signal spectrum (reuse some data to make it more dense)
+    viewer.PlotDoubleSignal(channel1, channel2) % Plot two signal spectrum symmetrically
     ```
 
 ## EEG Notes
@@ -28,12 +33,32 @@ Electroencephalography signal analysis and visualization
 * Beta: 14~30 Hz
 * Gamma: 30~100 Hz
 
+### Terminology
+
+* EEG - Electroencephalography
+* ICA - Independent Component Analysis
+* Component
+* Epoch
+* Event
+* FIR Filter - Finite Impulse Response Filter
+* ERP - Event-Related Potential
+
 ## TODO
 
-- [X] Load data
+- [X] Load data (Other's function)
 - [X] Plot single signal
 - [X] Plot two signal symmetrically
 - [X] Add channel label
+- [X] Add FIR Filter (EEGLAB function)
+- [ ] Add quick data viewer (EEGLAB function)
+
+## Other's function used
+
+* read_edf.m - *.edf data loader
+
+### EEGLAB
+
+* eegfilt.m - FIR Filter
 
 ## Related Links
 

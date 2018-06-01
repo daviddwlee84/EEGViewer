@@ -25,10 +25,8 @@ classdef EEGViewer < handle
         dps
         %> Total iteration
         totalrun
+
         
-        %> 
-        max_filter
-        min_filter
         
         %> Number of channels
         numchannels
@@ -61,16 +59,25 @@ classdef EEGViewer < handle
 
             obj.dps = obj.Fs/obj.rng/2; % Data per seconds
             
-            obj.max_filter = 30; % Low pass filter
-            obj.min_filter = 1; % High pass filter
             
             obj.numchannels = Header.numchannels; % Number of channels
             
             obj.RawData = Data;
 
-            obj.channelNames = Header.channels
+            obj.channelNames = Header.channels;
             
         end
+        % ======================================================================
+        %> @brief Plot Signal Signal
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param min_filter instance of the EEGViewer class.
+        %> @param max_filter instance of the EEGViewer class.
+        % ======================================================================
+        function FIRfiltering(obj, min_filter, max_filter)
+            obj.RawData = eegfilt(obj.RawData, obj.Fs, min_filter, max_filter);
+        end
+        
         % ======================================================================
         %> @brief Process FFT on data
         %>
@@ -117,10 +124,13 @@ classdef EEGViewer < handle
             ret = P1;
         end
         
+
+        
         % ======================================================================
         %> @brief Plot Signal Signal
         %>
         %> @param obj instance of the EEGViewer class.
+        %> @param channel the specific channel to plot.
         % ======================================================================
         function PlotSingleSignal(obj, channel)
             if channel > obj.numchannels
@@ -172,6 +182,7 @@ classdef EEGViewer < handle
         %> @brief Plot Single Signal (Reuse the same half data of last process)
         %>
         %> @param obj instance of the EEGViewer class.
+        %> @param channel the specific channel to plot.
         % ======================================================================
         function PlotSingleSignalReuse(obj, channel)
             if channel > obj.numchannels
@@ -220,6 +231,8 @@ classdef EEGViewer < handle
         %> @brief Plot Double Signal Symmetrically
         %>
         %> @param obj instance of the EEGViewer class.
+        %> @param channel1 the first specific channel to plot.
+        %> @param channel2 the second specific channel to plot.
         % ======================================================================
         function PlotDoubleSignal(obj, channel1, channel2)
             if channel1 > obj.numchannels || channel2 > obj.numchannels
