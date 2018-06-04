@@ -7,6 +7,9 @@ viewer = EEGViewer('Example/testdata.edf');
 viewer.FIRfiltering(1, 30);
 %viewer.ScrollView(); % After Filtering
 
+viewer.AverageReReference();
+%viewer.ScrollView(); % After ReReference
+
 % same signal
 viewer.PlotDoubleSignal(3, 3);
 

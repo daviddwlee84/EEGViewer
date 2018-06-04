@@ -67,6 +67,8 @@ Electroencephalography signal analysis and visualization
 - [X] Add channel label
 - [X] Add FIR Filter (EEGLAB function)
 - [X] Add quick data viewer (EEGLAB function)
+- [X] Average Re-reference
+- [X] Log version of Plot
 
 ## Other's function used
 

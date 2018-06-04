@@ -98,6 +98,15 @@ classdef EEGViewer < handle
         function FIRfiltering(obj, min_filter, max_filter)
             obj.Data = eegfilt(obj.Data, obj.Fs, min_filter, max_filter);
         end
+
+        % ======================================================================
+        %> @brief Average re-reference
+        %>
+        %> @param obj instance of the EEGViewer class.
+        % ======================================================================
+        function AverageReReference(obj)
+            obj.Data = obj.Data - mean(mean(obj.Data));
+        end
         
         % ======================================================================
         %> @brief Process FFT on data
@@ -105,7 +114,7 @@ classdef EEGViewer < handle
         %> @param obj instance of the EEGViewer class.
         %> @retval ret return value of this method
         % ======================================================================
-        function ret = DataProcess(obj)
+        function ret = DataProcess(obj, mode)
             Y = zeros(1, obj.L/obj.rng, obj.rng); % channel time length
             P2 = zeros(1, obj.L/obj.rng, obj.rng);
             P1 = zeros(1, obj.L/obj.rng, obj.rng/2+1);
@@ -113,13 +122,18 @@ classdef EEGViewer < handle
             for channel = 1:obj.numchannels
                 for i = 1:obj.totalrun
                     Y(channel, i, :) = fft(obj.Data(channel, 1+obj.rng*(i-1):obj.rng*i));
-                    P2(channel, i, :) = abs(Y(channel, i, :));
+                    P2(channel, i, :) = abs(Y(channel, i, :)); % Handle complex value
                     P1(channel, i, :) = P2(channel, i, 1:obj.rng/2+1);
                     P1(channel, i, 2:end-1) = 2*P1(channel, i, 2:end-1);
                     P1(channel, i, 1) = 0; % Get rid of 0Hz data
                 end
+            end   
+            
+            if strcmp(mode, 'log') 
+                ret = 10*log10(P1);
+            else
+                ret = P1;
             end
-            ret = P1;
         end
         
         % ======================================================================
@@ -128,7 +142,7 @@ classdef EEGViewer < handle
         %> @param obj instance of the EEGViewer class.
         %> @retval ret return value of this method
         % ======================================================================
-        function ret = DataProcessReuse(obj)
+        function ret = DataProcessReuse(obj, mode)
             Y = zeros(obj.numchannels, obj.totalrun, obj.rng); % channel time length
             P2 = zeros(obj.numchannels, obj.totalrun, obj.rng);
             P1 = zeros(obj.numchannels, obj.totalrun, obj.rng/2+1);
@@ -136,13 +150,17 @@ classdef EEGViewer < handle
             for channel = 1:obj.numchannels
                 for i = 1:obj.totalrun
                     Y(channel, i, :) = fft(obj.Data(channel, 1+obj.rng*((i-1)/2):obj.rng*(i-1)/2+1000));
-                    P2(channel, i, :) = abs(Y(channel, i, :));
+                    P2(channel, i, :) = abs(Y(channel, i, :)); % Handle complex value
                     P1(channel, i, :) = P2(channel, i, 1:obj.rng/2+1);
                     P1(channel, i, 2:end-1) = 2*P1(channel, i, 2:end-1);
                     P1(channel, i, 1) = 0; % Get rid of 0Hz data
                 end
             end
-            ret = P1;
+            if strcmp(mode, 'log') 
+                ret = 10*log10(P1);
+            else
+                ret = P1;
+            end
         end
         
 
@@ -158,7 +176,13 @@ classdef EEGViewer < handle
                 error('No such channel')
             end
             
-            fftdata = obj.DataProcess;
+            mode = 'log'; % switch mode between log and original
+            
+            if strcmp(mode, 'log') 
+                fftdata = obj.DataProcess('log');
+            else
+                fftdata = obj.DataProcess('ori');
+            end
             
             f = obj.Fs*(0:(obj.rng/2))/obj.rng;
 
@@ -172,7 +196,11 @@ classdef EEGViewer < handle
             title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            zlabel('|P1(f)|')
+            if strcmp(mode, 'log')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+            else
+                zlabel('|P1(f)|')
+            end
             colorbar
             s.EdgeColor = 'none';
             colormap Jet
@@ -210,7 +238,13 @@ classdef EEGViewer < handle
                 error('No such channel')
             end
             
-            fftdata = obj.DataProcessReuse;
+            mode = 'log'; % switch mode between log and original
+            
+            if strcmp(mode, 'log') 
+                fftdata = obj.DataProcessReuse('log');
+            else
+                fftdata = obj.DataProcessReuse('ori');
+            end
             
             f = obj.Fs*(0:(obj.rng/2))/obj.rng;
 
@@ -224,7 +258,11 @@ classdef EEGViewer < handle
             title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3), ' (Reuse version)'])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            zlabel('|P1(f)|')
+            if strcmp(mode, 'log')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+            else
+                zlabel('|P1(f)|')
+            end
             colorbar
             colormap Jet
             s.EdgeColor = 'none';
@@ -260,7 +298,13 @@ classdef EEGViewer < handle
                 error('No such channel')
             end
             
-            fftdata = obj.DataProcess;
+            mode = 'log'; % switch mode between log and original
+            
+            if strcmp(mode, 'log') 
+                fftdata = obj.DataProcess('log');
+            else
+                fftdata = obj.DataProcess('ori');
+            end
             
             f = obj.Fs*(-(obj.rng/2):(obj.rng/2))/obj.rng;
 
@@ -268,17 +312,31 @@ classdef EEGViewer < handle
 
             zz1 = fftdata(channel1, 1:end, 2:31);
             zz2 = fftdata(channel2, 1:end, 2:31);
+            
+            % 0Hz Value
+            if strcmp(mode, 'log')
+                zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
+                zeroHz = zeroHz';
+            else
+                zeroHz = zeros(obj.totalrun, 1);
+            end
+
             zz1 = reshape(zz1, [obj.L/obj.rng, 30]);
             zz2 = reshape(zz2, [obj.L/obj.rng, 30]);
             zz1 = fliplr(zz1);
-            zz = [zz1, zeros(obj.totalrun, 1), zz2];
+            
+            zz = [zz1, zeroHz, zz2];
 
             figure
             s = surf(xx, yy, zz);
             title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            zlabel('|P1(f)|')
+            if strcmp(mode, 'log')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+            else
+                zlabel('|P1(f)|')
+            end
             colorbar
             s.EdgeColor = 'none';
             colormap Jet
