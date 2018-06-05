@@ -25,7 +25,13 @@ Electroencephalography signal analysis and visualization
     viewer.FIRfiltering(1, 30); % Band-pass FIR filter of 1~30 Hz
     ```
 
-3. Plot
+3. Re-Reference (Optional)
+
+    ```matlab
+    viewer.AverageReReference();
+    ```
+
+4. Plot
 
     ```matlab
     viewer.PlotSingleSignal(channel)            % Plot single signal spectrum
@@ -59,6 +65,18 @@ Electroencephalography signal analysis and visualization
 * FIR Filter - Finite Impulse Response Filter
 * ERP - Event-Related Potential
 
+## Math Notes
+
+### Signal Smoothing
+
+* [Signal Smoothing (Official Document)](http://ww2.mathworks.cn/help/signal/examples/signal-smoothing.html)
+
+* [Interpolation](https://www.mathworks.com/help/matlab/ref/interp2.html)
+    * linear (Default)
+    * cubic
+    * spline (Requires four points in each dimension)
+    * ...
+
 ## TODO
 
 - [X] Load data (Other's function)
@@ -69,6 +87,7 @@ Electroencephalography signal analysis and visualization
 - [X] Add quick data viewer (EEGLAB function)
 - [X] Average Re-reference
 - [X] Log version of Plot
+- [X] Make plot smoother
 
 ## Other's function used
 

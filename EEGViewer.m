@@ -188,11 +188,20 @@ classdef EEGViewer < handle
 
             [xx, yy] = meshgrid(f(1:31), 1:obj.totalrun);
 
-            zz = fftdata(channel, 1:end, 1:31);
-            zz = reshape(zz, [obj.L/obj.rng, 31]);
-
+            zz = fftdata(channel, 1:end, 1:31); % 1 x TotalSecond x 31
+            zz = reshape(zz, [obj.L/obj.rng, 31]); % TotalSecond x 31
+            
+            % Smoother
+            newF = obj.Fs*(0:0.1:(obj.rng/2))/obj.rng;
+            [Xq, Yq] = meshgrid(newF(1:301), 1:0.1:obj.totalrun);
+            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+            
             figure
-            s = surf(xx, yy, zz);
+            s = surf(Xq, Yq, Zq);
+            % Original
+            %figure
+            %s = surf(xx, yy, zz);
+            
             title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
@@ -252,9 +261,19 @@ classdef EEGViewer < handle
 
             zz = fftdata(channel, 1:end, 1:31);
             zz = reshape(zz, [obj.totalrun, 31]);
-
+            
+            
+            % Smoother
+            newF = obj.Fs*(0:0.1:(obj.rng/2))/obj.rng;
+            [Xq, Yq] = meshgrid(newF(1:301), 1:0.05:obj.totalrun);
+            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+            
             figure
-            s = surf(xx, yy, zz);
+            s = surf(Xq, Yq, Zq);
+            % Original
+            %figure
+            %s = surf(xx, yy, zz);
+            
             title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3), ' (Reuse version)'])
             xlabel('f (Hz)')
             ylabel('t (sec)')
@@ -326,9 +345,18 @@ classdef EEGViewer < handle
             zz1 = fliplr(zz1);
             
             zz = [zz1, zeroHz, zz2];
-
+            
+            % Smoother
+            newF = obj.Fs*(-(obj.rng/2):0.1:(obj.rng/2))/obj.rng;
+            [Xq, Yq] = meshgrid(newF((obj.rng*10/2-299):(obj.rng*10/2+301)), 1:0.1:obj.totalrun);
+            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+            
             figure
-            s = surf(xx, yy, zz);
+            s = surf(Xq, Yq, Zq);
+            % Original
+            %figure
+            %s = surf(xx, yy, zz);
+
             title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
