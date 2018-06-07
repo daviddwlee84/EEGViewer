@@ -92,6 +92,14 @@ Electroencephalography signal analysis and visualization
         * [Ordinary Kriging (Matlab)](https://www.mathworks.com/matlabcentral/fileexchange/29025-ordinary-kriging)
         * [mGstat : A Geostatistical Matlab toolbox](http://mgstat.sourceforge.net/)
 
+* [Curve and surface smoothing without shrinkage](https://ieeexplore.ieee.org/document/466848/)
+
+### Plot Axis
+
+* [Axis](https://www.mathworks.com/help/matlab/ref/axis.html)
+    * axis style - `axis tight`
+    * axis limits - `axis([xmin xmax ymin ymax zmin zmax])`
+
 ## TODO
 
 - [X] Load data (Other's function)

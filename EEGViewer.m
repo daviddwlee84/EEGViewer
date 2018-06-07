@@ -213,6 +213,8 @@ classdef EEGViewer < handle
             colorbar
             s.EdgeColor = 'none';
             colormap Jet
+            axis tight
+            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
             grid on
             hold on
 
@@ -285,6 +287,8 @@ classdef EEGViewer < handle
             colorbar
             colormap Jet
             s.EdgeColor = 'none';
+            axis tight
+            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
             grid on
             hold on
 
@@ -368,6 +372,8 @@ classdef EEGViewer < handle
             colorbar
             s.EdgeColor = 'none';
             colormap Jet
+            axis tight
+            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
             grid on
             hold on
 
