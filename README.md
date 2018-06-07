@@ -67,15 +67,30 @@ Electroencephalography signal analysis and visualization
 
 ## Math Notes
 
-### Signal Smoothing
+### Signal Smoothing Methods
 
-* [Signal Smoothing (Official Document)](http://ww2.mathworks.cn/help/signal/examples/signal-smoothing.html)
+* [Signal Smoothing (Matlab Signal Processing Toolbox Document)](http://ww2.mathworks.cn/help/signal/examples/signal-smoothing.html)
+    * Moving Average Filter (+ Filter Delay)
+    * Extracting Average Differences
+    * Extracting Peak Envelope
+    * Weighted Moving Average Filters
+    * Savitzky-Golay Filters
+    * Resampling
+    * Median Filter
+    * Outlier Removal via Hampel Filter
 
-* [Interpolation](https://www.mathworks.com/help/matlab/ref/interp2.html)
+* [2D Interpolation - interp2 (Matlab)](https://www.mathworks.com/help/matlab/ref/interp2.html)
     * linear (Default)
     * cubic
     * spline (Requires four points in each dimension)
     * ...
+
+* [About Smoothing Surfaces (AutoCAD)](https://forums.autodesk.com/t5/civil-3d/ct-p/4003)
+    * [Natural Neighbor Interpolation (NNI)](https://knowledge.autodesk.com/support/civil-3d/learn-explore/caas/CloudHelp/cloudhelp/2018/ENU/Civil3D-UserGuide/files/GUID-C5B0D4A3-B1DC-406E-A5B9-E3DEA2547FF1-htm.html)
+    * [Kriging methods](https://www.wikiwand.com/en/Kriging)
+        * [A MATLAB Kriging Toolbox](http://www2.imm.dtu.dk/projects/dace/dace.pdf)
+        * [Ordinary Kriging (Matlab)](https://www.mathworks.com/matlabcentral/fileexchange/29025-ordinary-kriging)
+        * [mGstat : A Geostatistical Matlab toolbox](http://mgstat.sourceforge.net/)
 
 ## TODO
 
