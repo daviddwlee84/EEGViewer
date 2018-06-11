@@ -34,9 +34,10 @@ Electroencephalography signal analysis and visualization
 4. Plot
 
     ```matlab
-    viewer.PlotSingleSignal(channel)            % Plot single signal spectrum
-    viewer.PlotSingleSignalReuse(channel)       % Plot single signal spectrum (reuse some data to make it more dense)
-    viewer.PlotDoubleSignal(channel1, channel2) % Plot two signal spectrum symmetrically
+    viewer.PlotSingleSignal(channel)                % Plot single signal spectrum
+    viewer.PlotSingleSignalReuse(channel)           % Plot single signal spectrum (reuse some data to make it more dense)
+    viewer.PlotDoubleSignal(channel1, channel2)     % Plot two signal spectrum symmetrically
+    viewer.AnimatedDoubleSignal(channel1, channel2) % Plot animated two signal symmetrically
     ```
 
 * Quick view of data
@@ -100,6 +101,16 @@ Electroencephalography signal analysis and visualization
     * axis style - `axis tight`
     * axis limits - `axis([xmin xmax ymin ymax zmin zmax])`
 
+### Animated Plot
+
+* [Animating a Surface](https://www.mathworks.com/help/matlab/examples/animating-a-surface.html)
+* [Matlab Tutorial - Animated Plot in 2D](https://youtu.be/6yIuy-r0mi4)
+* [Matlab Animation](https://www.mathworks.com/help/matlab/animation-1.html)
+
+### Annotation (e.g. TextBox in a figure)
+
+[Matlab Annotation](http://www.mathworks.com/help/matlab/ref/annotation.html) - Textbox
+
 ## TODO
 
 - [X] Load data (Other's function)
@@ -111,6 +122,7 @@ Electroencephalography signal analysis and visualization
 - [X] Average Re-reference
 - [X] Log version of Plot
 - [X] Make plot smoother
+- [X] Animated 3D Surface
 
 ## Other's function used
 

@@ -400,7 +400,110 @@ classdef EEGViewer < handle
             plot(x_beta, y_beta, 'y') 
             
             hold off
+
+        end
+        
+        % ======================================================================
+        %> @brief Animated Plot Double Signal
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param channel1 the first specific channel to plot.
+        %> @param channel2 the second specific channel to plot.
+        % ======================================================================
+        function AnimatedDoubleSignal(obj, channel1, channel2)
+            % Deal with input
+            if channel1 > obj.numchannels || channel2 > obj.numchannels
+                error('No such channel')
+            end
             
+            mode = 'log'; % switch mode between log and original
+            if strcmp(mode, 'log') 
+                fftdata = obj.DataProcess('log');
+            else
+                fftdata = obj.DataProcess('ori');
+            end
+            
+            % Define the grid
+            f = obj.Fs*(-(obj.rng/2):(obj.rng/2))/obj.rng;
+
+            [xx, yy] = meshgrid(f((obj.rng/2-29):(obj.rng/2+31)), 1:obj.totalrun);
+            
+            zz1 = fftdata(channel1, 1:end, 2:31);
+            zz2 = fftdata(channel2, 1:end, 2:31);
+            
+            % 0Hz Value
+            if strcmp(mode, 'log')
+                zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
+                zeroHz = zeroHz';
+            else
+                zeroHz = zeros(obj.totalrun, 1);
+            end
+
+            zz1 = reshape(zz1, [obj.totalrun, 30]);
+            zz2 = reshape(zz2, [obj.totalrun, 30]);
+            zz1 = fliplr(zz1);
+            
+            zz = [zz1, zeroHz, zz2];
+            
+            % Smoother
+            newF = obj.Fs*(-(obj.rng/2):0.1:(obj.rng/2))/obj.rng;
+            [Xq, Yq] = meshgrid(newF((obj.rng*10/2-299):(obj.rng*10/2+301)), 1:0.1:obj.totalrun);
+            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+            
+            figure
+            s = surf(Xq(1:2, :), Yq(1:2, :), Zq(1:2, :)); % surface must be a matrix (can't be a line)
+            
+            title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
+            xlabel('f (Hz)')
+            ylabel('t (sec)')
+            if strcmp(mode, 'log')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+            else
+                zlabel('|P1(f)|')
+            end
+            colorbar
+            s.EdgeColor = 'none';
+            colormap Jet
+            axis tight
+            view(200,15)         % set viewpoint
+            %camzoom(1)        % zoom into scene
+            grid on
+            hold on
+            
+            % f(1) is 0Hz
+            %delta
+            [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
+            plot(x_delta, y_delta, 'b')
+            [x_delta, y_delta] = meshgrid(-1:-1:-3, 1:obj.totalrun);
+            plot(x_delta, y_delta, 'b')
+            %theta
+            [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
+            plot(x_theta, y_theta, 'g')
+            [x_theta, y_theta] = meshgrid(-4:-1:-7, 1:obj.totalrun);
+            plot(x_theta, y_theta, 'g')
+            %alpha
+            [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
+            plot(x_alpha, y_alpha, 'r')
+            [x_alpha, y_alpha] = meshgrid(-8:-1:-12, 1:obj.totalrun);
+            plot(x_alpha, y_alpha, 'r')
+            %beta
+            [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
+            plot(x_beta, y_beta, 'y')
+            [x_beta, y_beta] = meshgrid(-13:-1:-30, 1:obj.totalrun);
+            plot(x_beta, y_beta, 'y') 
+            
+            a = annotation('textbox', [0.15 0.15 0.3 0.15],...
+                'String', ['Time: ', num2str(obj.totalrun/length(Xq(:, 1))*2), 'Sec'],...
+                'FontSize',14, 'FitBoxToText','on');
+            
+            % 3 => already plot 2
+            for time = 3:length(Xq(:, 1)) % 3:obj.totalrun*10
+                a.String = ['Time: ', sprintf('%3.2f', (obj.totalrun/length(Xq(:, 1)))*time), ' (second)']; % sec/10
+                s.XData = Xq(1:time, :);    % replace surface x values
+                s.YData = Yq(1:time, :);    % replace surface y values
+                s.ZData = Zq(1:time, :);    % replace surface z values
+                pause(obj.totalrun/length(Xq(:, 1))) % 0.1
+            end
             
         end
     end
