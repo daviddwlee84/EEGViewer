@@ -2,6 +2,10 @@
 
 Electroencephalography signal analysis and visualization
 
+## Demo
+
+![Animated](demo/Animated.gif) ![DoubleSignal](demo/DoubleSignal.png)
+
 ## Basic Usage
 
 ### Simple procedure
@@ -31,11 +35,19 @@ Electroencephalography signal analysis and visualization
     viewer.AverageReReference();
     ```
 
-4. Plot
+4. SetMinDrop / SetMaxRange (Optional)
+
+    ```matlab
+    viewer.SetMinDrop(minimum) % Default is 0 (don't drop)
+    ```
+    ```matlab
+    viewer.SetMaxRange(maximum) % Default is the maximum of all channel's FFT data
+    ```
+
+5. Plot
 
     ```matlab
     viewer.PlotSingleSignal(channel)                % Plot single signal spectrum
-    viewer.PlotSingleSignalReuse(channel)           % Plot single signal spectrum (reuse some data to make it more dense)
     viewer.PlotDoubleSignal(channel1, channel2)     % Plot two signal spectrum symmetrically
     viewer.AnimatedDoubleSignal(channel1, channel2) % Plot animated two signal symmetrically
     ```
@@ -111,6 +123,11 @@ Electroencephalography signal analysis and visualization
 
 [Matlab Annotation](http://www.mathworks.com/help/matlab/ref/annotation.html) - Textbox
 
+### Colormap
+
+[Matlab caxis](https://www.mathworks.com/help/matlab/ref/caxis.html) - set colormap limits
+[Matlab colormap](https://www.mathworks.com/help/matlab/ref/colormap.html)
+
 ## TODO
 
 - [X] Load data (Other's function)
@@ -123,6 +140,12 @@ Electroencephalography signal analysis and visualization
 - [X] Log version of Plot
 - [X] Make plot smoother
 - [X] Animated 3D Surface
+- [X] Color map / Drop low value / Set max
+- [X] Deprecate ori version of Plot (non-log version and non-interpolation version and reuse version)
+- [X] Demo on README
+- [ ] Event label
+- [ ] Seperate private and public [methods](https://www.mathworks.com/help/matlab/matlab_oop/method-attributes.html) / [properties](https://www.mathworks.com/help/matlab/matlab_oop/properties.html)
+- [ ] Better Demo
 
 ## Other's function used
 

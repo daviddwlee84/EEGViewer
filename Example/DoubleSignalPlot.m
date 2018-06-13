@@ -3,17 +3,22 @@ close all
 
 viewer = EEGViewer('Example/testdata.edf');
 
-%viewer.ScrollView(); % Before Filtering
+
 viewer.FIRfiltering(1, 30);
-%viewer.ScrollView(); % After Filtering
 
 viewer.AverageReReference();
+
 %viewer.ScrollView(); % After ReReference
 
-% same signal
-viewer.PlotDoubleSignal(3, 3);
+%viewer.SetMinDrop(30);
+%viewer.SetMaxRange(50);
+
+viewer.PlotDoubleSignal(1, 2);
+viewer.PlotDoubleSignal(3, 6);
+viewer.PlotDoubleSignal(4, 5);
+viewer.PlotDoubleSignal(7, 8);
 
 % show all signal
-for i = 1:2:viewer.numchannels
-    viewer.PlotDoubleSignal(i, i+1);
-end
+% for i = 1:2:viewer.numchannels
+%     viewer.PlotDoubleSignal(i, i+1);
+% end

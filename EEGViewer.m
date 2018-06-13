@@ -7,6 +7,9 @@ classdef EEGViewer < handle
         %> Data
         Data
         
+        %> FFT Data
+        fftData
+        
         %> File
         Filepath
         Filename
@@ -35,6 +38,15 @@ classdef EEGViewer < handle
 
         %> Channel names
         channelNames
+        
+        %> Min drop
+        mindrop
+        %> Max range
+        maxrange
+        
+        %> FFT Data Max
+        fftdatamax
+        
     end
     
     methods
@@ -78,10 +90,14 @@ classdef EEGViewer < handle
             
             obj.numchannels = header.numchannels; % Number of channels
             obj.channelNames = header.channels;   % Channel names
+            
+            obj.mindrop = 0; % Drop min
+            obj.fftdatamax = inf; % Maximum data value
+            obj.maxrange = inf; % Manual maximum value
         end
         
         % ======================================================================
-        %> @brief Scroll view on data
+        %> @brief Scroll view on data (Optional)
         %>
         % ======================================================================
         function ScrollView(obj)
@@ -89,7 +105,7 @@ classdef EEGViewer < handle
         end
         
         % ======================================================================
-        %> @brief Band-pass filter data using two-way least-squares FIR filtering
+        %> @brief Band-pass filter data using two-way least-squares FIR filtering (Optional)
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param min_filter instance of the EEGViewer class.
@@ -100,7 +116,7 @@ classdef EEGViewer < handle
         end
 
         % ======================================================================
-        %> @brief Average re-reference
+        %> @brief Average re-reference (Optional)
         %>
         %> @param obj instance of the EEGViewer class.
         % ======================================================================
@@ -112,9 +128,9 @@ classdef EEGViewer < handle
         %> @brief Process FFT on data
         %>
         %> @param obj instance of the EEGViewer class.
-        %> @retval ret return value of this method
+        %> @retval ret return logarithm value of this method
         % ======================================================================
-        function ret = DataProcess(obj, mode)
+        function ret = DataProcess(obj)
             Y = zeros(1, obj.L/obj.rng, obj.rng); % channel time length
             P2 = zeros(1, obj.L/obj.rng, obj.rng);
             P1 = zeros(1, obj.L/obj.rng, obj.rng/2+1);
@@ -128,45 +144,48 @@ classdef EEGViewer < handle
                     P1(channel, i, 1) = 0; % Get rid of 0Hz data
                 end
             end   
-            
-            if strcmp(mode, 'log') 
-                ret = 10*log10(P1);
-            else
-                ret = P1;
-            end
+            % Logarithm
+            ret = 10*log10(P1);
         end
         
         % ======================================================================
-        %> @brief Process Reuse version FFT on data
+        %> @brief FFT Transform
         %>
         %> @param obj instance of the EEGViewer class.
-        %> @retval ret return value of this method
         % ======================================================================
-        function ret = DataProcessReuse(obj, mode)
-            Y = zeros(obj.numchannels, obj.totalrun, obj.rng); % channel time length
-            P2 = zeros(obj.numchannels, obj.totalrun, obj.rng);
-            P1 = zeros(obj.numchannels, obj.totalrun, obj.rng/2+1);
-            obj.totalrun = obj.L/obj.rng*2-1; % Total iteration
-            for channel = 1:obj.numchannels
-                for i = 1:obj.totalrun
-                    Y(channel, i, :) = fft(obj.Data(channel, 1+obj.rng*((i-1)/2):obj.rng*(i-1)/2+1000));
-                    P2(channel, i, :) = abs(Y(channel, i, :)); % Handle complex value
-                    P1(channel, i, :) = P2(channel, i, 1:obj.rng/2+1);
-                    P1(channel, i, 2:end-1) = 2*P1(channel, i, 2:end-1);
-                    P1(channel, i, 1) = 0; % Get rid of 0Hz data
-                end
-            end
-            if strcmp(mode, 'log') 
-                ret = 10*log10(P1);
-            else
-                ret = P1;
-            end
+        function fftTransform(obj)
+       
+            obj.fftData = obj.DataProcess();
+            
+            obj.fftdatamax = max(max(max(obj.fftData))); % Default maximum value
+
         end
         
+        % ======================================================================
+        %> @brief Set minimum drop value (Optional)
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param mindrop minimum value to drop.
+        % ======================================================================
+        function SetMinDrop(obj, mindrop)
+           obj.mindrop = mindrop; 
+        end
+
+        % ======================================================================
+        %> @brief Set max range value (Optional)
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param mindrop maximum value of scale.
+        % ======================================================================
+        function SetMaxRange(obj, maxrange)
+            obj.maxrange = maxrange; 
+        end
 
         
         % ======================================================================
         %> @brief Plot Signal Signal
+        %>        If obj.mindrop has set (~=0), shift to xy-plane.
+        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel the specific channel to plot.
@@ -175,14 +194,15 @@ classdef EEGViewer < handle
             if channel > obj.numchannels
                 error('No such channel')
             end
-            
-            mode = 'log'; % switch mode between log and original
-            
-            if strcmp(mode, 'log') 
-                fftdata = obj.DataProcess('log');
+
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
             else
-                fftdata = obj.DataProcess('ori');
+                shift = false;
             end
+            
+            obj.fftTransform();
+            fftdata = obj.fftData;
             
             f = obj.Fs*(0:(obj.rng/2))/obj.rng;
 
@@ -191,30 +211,60 @@ classdef EEGViewer < handle
             zz = fftdata(channel, 1:end, 1:31); % 1 x TotalSecond x 31
             zz = reshape(zz, [obj.L/obj.rng, 31]); % TotalSecond x 31
             
-            % Smoother
+            % Interpolation
             newF = obj.Fs*(0:0.1:(obj.rng/2))/obj.rng;
             [Xq, Yq] = meshgrid(newF(1:301), 1:0.1:obj.totalrun);
             Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+
+            % if fftdata < mindrop => set to mindrop
+            if obj.mindrop > 0
+                indices = Zq <= obj.mindrop;
+                Zq(indices) = obj.mindrop;
+            end
+            if shift
+                Zq = Zq - obj.mindrop;
+            end
             
             figure
             s = surf(Xq, Yq, Zq);
-            % Original
-            %figure
-            %s = surf(xx, yy, zz);
             
             title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            if strcmp(mode, 'log')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            else
-                zlabel('|P1(f)|')
-            end
+            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
             colorbar
             s.EdgeColor = 'none';
-            colormap Jet
+
+            % Set colormap max color to red
+            colormap jet
+            clm = colormap;
+            clm(end-7:end, 1) = 1;
+            colormap(clm)
+
+            if ~shift
+                if obj.mindrop == 0
+                    if obj.maxrange == inf
+                        lim = caxis;
+                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                    else
+                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                    end
+                else
+                    if obj.maxrange == inf
+                        caxis([obj.mindrop, obj.fftdatamax])
+                    else
+                        caxis([obj.mindrop, obj.maxrange])
+                    end
+                end
+            else
+                if obj.maxrange == inf
+                    caxis([0, obj.fftdatamax - obj.mindrop])
+                else
+                    caxis([0, obj.maxrange - obj.mindrop])
+                end
+            end
+
             axis tight
-            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
             grid on
             hold on
 
@@ -239,78 +289,9 @@ classdef EEGViewer < handle
         
         
         % ======================================================================
-        %> @brief Plot Single Signal (Reuse the same half data of last process)
-        %>
-        %> @param obj instance of the EEGViewer class.
-        %> @param channel the specific channel to plot.
-        % ======================================================================
-        function PlotSingleSignalReuse(obj, channel)
-            if channel > obj.numchannels
-                error('No such channel')
-            end
-            
-            mode = 'log'; % switch mode between log and original
-            
-            if strcmp(mode, 'log') 
-                fftdata = obj.DataProcessReuse('log');
-            else
-                fftdata = obj.DataProcessReuse('ori');
-            end
-            
-            f = obj.Fs*(0:(obj.rng/2))/obj.rng;
-
-            [xx, yy] = meshgrid(f(1:31), 1:0.5:(obj.totalrun+1)/2);
-
-            zz = fftdata(channel, 1:end, 1:31);
-            zz = reshape(zz, [obj.totalrun, 31]);
-            
-            
-            % Smoother
-            newF = obj.Fs*(0:0.1:(obj.rng/2))/obj.rng;
-            [Xq, Yq] = meshgrid(newF(1:301), 1:0.05:obj.totalrun);
-            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
-            
-            figure
-            s = surf(Xq, Yq, Zq);
-            % Original
-            %figure
-            %s = surf(xx, yy, zz);
-            
-            title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3), ' (Reuse version)'])
-            xlabel('f (Hz)')
-            ylabel('t (sec)')
-            if strcmp(mode, 'log')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            else
-                zlabel('|P1(f)|')
-            end
-            colorbar
-            colormap Jet
-            s.EdgeColor = 'none';
-            axis tight
-            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
-            grid on
-            hold on
-
-            % f(1) is 0Hz
-            %delta
-            [x_delta, y_delta] = meshgrid(1:3, 1:(obj.totalrun+1)/2);
-            plot(x_delta, y_delta, 'b')
-            %theta
-            [x_theta, y_theta] = meshgrid(4:7, 1:(obj.totalrun+1)/2);
-            plot(x_theta, y_theta, 'g')
-            %alpha
-            [x_alpha, y_alpha] = meshgrid(8:12, 1:(obj.totalrun+1)/2);
-            plot(x_alpha, y_alpha, 'r')
-            %beta
-            [x_beta, y_beta] = meshgrid(13:30, 1:(obj.totalrun+1)/2);
-            plot(x_beta, y_beta, 'y')
-            
-            hold off
-        end
-        
-        % ======================================================================
         %> @brief Plot Double Signal Symmetrically
+        %>        If obj.mindrop has set (~=0), shift to xy-plane.
+        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel1 the first specific channel to plot.
@@ -321,13 +302,14 @@ classdef EEGViewer < handle
                 error('No such channel')
             end
             
-            mode = 'log'; % switch mode between log and original
-            
-            if strcmp(mode, 'log') 
-                fftdata = obj.DataProcess('log');
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
             else
-                fftdata = obj.DataProcess('ori');
+                shift = false;
             end
+            
+            obj.fftTransform();
+            fftdata = obj.fftData;
             
             f = obj.Fs*(-(obj.rng/2):(obj.rng/2))/obj.rng;
 
@@ -337,12 +319,8 @@ classdef EEGViewer < handle
             zz2 = fftdata(channel2, 1:end, 2:31);
             
             % 0Hz Value
-            if strcmp(mode, 'log')
-                zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
-                zeroHz = zeroHz';
-            else
-                zeroHz = zeros(obj.totalrun, 1);
-            end
+            zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
+            zeroHz = zeroHz';
 
             zz1 = reshape(zz1, [obj.L/obj.rng, 30]);
             zz2 = reshape(zz2, [obj.L/obj.rng, 30]);
@@ -350,30 +328,64 @@ classdef EEGViewer < handle
             
             zz = [zz1, zeroHz, zz2];
             
-            % Smoother
+            % Interpolation
             newF = obj.Fs*(-(obj.rng/2):0.1:(obj.rng/2))/obj.rng;
             [Xq, Yq] = meshgrid(newF((obj.rng*10/2-299):(obj.rng*10/2+301)), 1:0.1:obj.totalrun);
             Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+
+            % if fftdata < mindrop => set to mindrop
+            if obj.mindrop > 0
+                indices = Zq <= obj.mindrop;
+                Zq(indices) = obj.mindrop;
+            end
+            if shift
+                Zq = Zq - obj.mindrop;
+                % Cover hole?!
+                %Zq(1, :) = obj.mindrop;
+                %Zq(end, :) = obj.mindrop;
+            end
             
             figure
             s = surf(Xq, Yq, Zq);
-            % Original
-            %figure
-            %s = surf(xx, yy, zz);
 
             title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            if strcmp(mode, 'log')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            else
-                zlabel('|P1(f)|')
-            end
+            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
             colorbar
             s.EdgeColor = 'none';
+
+            % Set colormap max color to RED
             colormap Jet
+            clm = colormap;
+            clm(end-7:end, 1) = 1;
+            colormap(clm)
+            
+            if ~shift
+                if obj.mindrop == 0
+                    if obj.maxrange == inf
+                        lim = caxis;
+                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                    else
+                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                    end
+                else
+                    if obj.maxrange == inf
+                        caxis([obj.mindrop, obj.fftdatamax])
+                    else
+                        caxis([obj.mindrop, obj.maxrange])
+                    end
+                end
+            else
+                if obj.maxrange == inf
+                    caxis([0, obj.fftdatamax - obj.mindrop])
+                else
+                    caxis([0, obj.maxrange - obj.mindrop])
+                end
+            end
+            
             axis tight
-            %axis([-inf, inf, -inf, inf, min(Zq), max(Zq)])
+            view(180,15)         % set viewpoint
             grid on
             hold on
 
@@ -405,6 +417,8 @@ classdef EEGViewer < handle
         
         % ======================================================================
         %> @brief Animated Plot Double Signal
+        %>        If obj.mindrop has set (~=0), shift to xy-plane.
+        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel1 the first specific channel to plot.
@@ -415,13 +429,15 @@ classdef EEGViewer < handle
             if channel1 > obj.numchannels || channel2 > obj.numchannels
                 error('No such channel')
             end
-            
-            mode = 'log'; % switch mode between log and original
-            if strcmp(mode, 'log') 
-                fftdata = obj.DataProcess('log');
+
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
             else
-                fftdata = obj.DataProcess('ori');
+                shift = false;
             end
+            
+            obj.fftTransform();
+            fftdata = obj.fftData;
             
             % Define the grid
             f = obj.Fs*(-(obj.rng/2):(obj.rng/2))/obj.rng;
@@ -432,12 +448,8 @@ classdef EEGViewer < handle
             zz2 = fftdata(channel2, 1:end, 2:31);
             
             % 0Hz Value
-            if strcmp(mode, 'log')
-                zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
-                zeroHz = zeroHz';
-            else
-                zeroHz = zeros(obj.totalrun, 1);
-            end
+            zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
+            zeroHz = zeroHz';
 
             zz1 = reshape(zz1, [obj.totalrun, 30]);
             zz2 = reshape(zz2, [obj.totalrun, 30]);
@@ -445,10 +457,18 @@ classdef EEGViewer < handle
             
             zz = [zz1, zeroHz, zz2];
             
-            % Smoother
+            % Interpolation
             newF = obj.Fs*(-(obj.rng/2):0.1:(obj.rng/2))/obj.rng;
             [Xq, Yq] = meshgrid(newF((obj.rng*10/2-299):(obj.rng*10/2+301)), 1:0.1:obj.totalrun);
             Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
+
+            if obj.mindrop > 0
+                indices = Zq <= obj.mindrop;
+                Zq(indices) = obj.mindrop;
+            end
+            if shift
+                Zq = Zq - obj.mindrop;
+            end
             
             figure
             s = surf(Xq(1:2, :), Yq(1:2, :), Zq(1:2, :)); % surface must be a matrix (can't be a line)
@@ -456,17 +476,41 @@ classdef EEGViewer < handle
             title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
             xlabel('f (Hz)')
             ylabel('t (sec)')
-            if strcmp(mode, 'log')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            else
-                zlabel('|P1(f)|')
-            end
+            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
             colorbar
             s.EdgeColor = 'none';
+
+            % Set colormap max color to RED
             colormap Jet
+            clm = colormap;
+            clm(end-7:end, 1) = 1;
+            colormap(clm)
+
+            if ~shift
+                if obj.mindrop == 0
+                    if obj.maxrange == inf
+                        lim = caxis;
+                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                    else
+                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                    end
+                else
+                    if obj.maxrange == inf
+                        caxis([obj.mindrop, obj.fftdatamax])
+                    else
+                        caxis([obj.mindrop, obj.maxrange])
+                    end
+                end
+            else
+                if obj.maxrange == inf
+                    caxis([0, obj.fftdatamax - obj.mindrop])
+                else
+                    caxis([0, obj.maxrange - obj.mindrop])
+                end
+            end
+
             axis tight
             view(200,15)         % set viewpoint
-            %camzoom(1)        % zoom into scene
             grid on
             hold on
             
