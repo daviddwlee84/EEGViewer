@@ -143,6 +143,14 @@ Electroencephalography signal analysis and visualization
 - [X] Color map / Drop low value / Set max
 - [X] Deprecate ori version of Plot (non-log version and non-interpolation version and reuse version)
 - [X] Demo on README
+- [ ] Slider for animated plot
+- [ ] Accelerate button for animated plot
+- [ ] Multiple animated plot at same time
+- [ ] Maximum range period showed on screen
+- [ ] Advantage dot plot
+- [ ] Average bar plot
+- [ ] Average distribute pie chart
+- [ ] Spectrum report
 - [ ] Event label
 - [ ] Seperate private and public [methods](https://www.mathworks.com/help/matlab/matlab_oop/method-attributes.html) / [properties](https://www.mathworks.com/help/matlab/matlab_oop/properties.html)
 - [ ] Better Demo

@@ -247,6 +247,7 @@ classdef EEGViewer < handle
                         lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
                     else
+                        lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.maxrange])
                     end
                 else
@@ -286,18 +287,15 @@ classdef EEGViewer < handle
             
             
         end
-        
-        
         % ======================================================================
-        %> @brief Plot Double Signal Symmetrically
-        %>        If obj.mindrop has set (~=0), shift to xy-plane.
-        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
+        %> @brief Double Signal Processing
         %>
         %> @param obj instance of the EEGViewer class.
-        %> @param channel1 the first specific channel to plot.
-        %> @param channel2 the second specific channel to plot.
+        %> @param channel1 the first specific channel to process.
+        %> @param channel2 the second specific channel to process.
         % ======================================================================
-        function PlotDoubleSignal(obj, channel1, channel2)
+        function [Xq, Yq, Zq] = ProcessDoubleSignal(obj, channel1, channel2)
+            
             if channel1 > obj.numchannels || channel2 > obj.numchannels
                 error('No such channel')
             end
@@ -344,6 +342,19 @@ classdef EEGViewer < handle
                 %Zq(1, :) = obj.mindrop;
                 %Zq(end, :) = obj.mindrop;
             end
+        end
+        % ======================================================================
+        %> @brief Plot Double Signal Symmetrically
+        %>        If obj.mindrop has set (~=0), shift to xy-plane.
+        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param channel1 the first specific channel to plot.
+        %> @param channel2 the second specific channel to plot.
+        % ======================================================================
+        function PlotDoubleSignal(obj, channel1, channel2)
+
+            [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
             
             figure
             s = surf(Xq, Yq, Zq);
@@ -361,12 +372,19 @@ classdef EEGViewer < handle
             clm(end-7:end, 1) = 1;
             colormap(clm)
             
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
+            else
+                shift = false;
+            end
+            
             if ~shift
                 if obj.mindrop == 0
                     if obj.maxrange == inf
                         lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
                     else
+                        lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.maxrange])
                     end
                 else
@@ -425,50 +443,8 @@ classdef EEGViewer < handle
         %> @param channel2 the second specific channel to plot.
         % ======================================================================
         function AnimatedDoubleSignal(obj, channel1, channel2)
-            % Deal with input
-            if channel1 > obj.numchannels || channel2 > obj.numchannels
-                error('No such channel')
-            end
-
-            if obj.mindrop > 0
-                shift = true; % shift minimum value to zero
-            else
-                shift = false;
-            end
             
-            obj.fftTransform();
-            fftdata = obj.fftData;
-            
-            % Define the grid
-            f = obj.Fs*(-(obj.rng/2):(obj.rng/2))/obj.rng;
-
-            [xx, yy] = meshgrid(f((obj.rng/2-29):(obj.rng/2+31)), 1:obj.totalrun);
-            
-            zz1 = fftdata(channel1, 1:end, 2:31);
-            zz2 = fftdata(channel2, 1:end, 2:31);
-            
-            % 0Hz Value
-            zeroHz(1:obj.totalrun) = (mean(mean(zz1)) + mean(mean(zz2)))/2;
-            zeroHz = zeroHz';
-
-            zz1 = reshape(zz1, [obj.totalrun, 30]);
-            zz2 = reshape(zz2, [obj.totalrun, 30]);
-            zz1 = fliplr(zz1);
-            
-            zz = [zz1, zeroHz, zz2];
-            
-            % Interpolation
-            newF = obj.Fs*(-(obj.rng/2):0.1:(obj.rng/2))/obj.rng;
-            [Xq, Yq] = meshgrid(newF((obj.rng*10/2-299):(obj.rng*10/2+301)), 1:0.1:obj.totalrun);
-            Zq = interp2(xx, yy, zz, Xq, Yq, 'cubic');
-
-            if obj.mindrop > 0
-                indices = Zq <= obj.mindrop;
-                Zq(indices) = obj.mindrop;
-            end
-            if shift
-                Zq = Zq - obj.mindrop;
-            end
+            [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
             
             figure
             s = surf(Xq(1:2, :), Yq(1:2, :), Zq(1:2, :)); % surface must be a matrix (can't be a line)
@@ -485,6 +461,12 @@ classdef EEGViewer < handle
             clm = colormap;
             clm(end-7:end, 1) = 1;
             colormap(clm)
+            
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
+            else
+                shift = false;
+            end
 
             if ~shift
                 if obj.mindrop == 0
@@ -492,6 +474,7 @@ classdef EEGViewer < handle
                         lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
                     else
+                        lim = caxis;
                         caxis([(lim(1)+lim(2))/2, obj.maxrange])
                     end
                 else
