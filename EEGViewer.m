@@ -595,6 +595,99 @@ classdef EEGViewer < handle
                 end
                 pause(pauseTime)
             end
+
+        end
+
+        % ======================================================================
+        %> @brief Animated Plot Double Signal for channels
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param channels the channel ids in pairs delivered in vector
+        %> @param speed default 2 times speed
+        % ======================================================================
+        function AnimatedMultipleSignal(obj, channels, speed)
+            if length(channels) > obj.numchannels
+                error('Too many channels')
+            end
+            if mod(length(channels), 2) == 1
+                error('Channels amount must be even number')
+            end
+            if nargin < 4
+                % Default 2 times speed
+                speed = 2;
+            end
+            
+            % Some constant
+            pairs = length(channels)/2;
+            graph_freq_length = length((obj.rng*10/2-299):(obj.rng*10/2+301));
+            graph_time_length = length(1:0.1:obj.totalsecond);
+            unitTimeLength = obj.totalsecond/graph_time_length;
+            dataPointAnimateLength = fix(obj.animatemaxlength/unitTimeLength);
+            pauseTime = obj.totalsecond/graph_time_length/speed;
+            
+            % Current support 8 pairs of channel
+            positionList = [[660, 0, 640, 480];...
+                            [660, 500, 640, 480];...
+                            [0, 0, 640, 480];...
+                            [0, 500, 640, 480];...
+                            [650*2, 0, 640, 480];...
+                            [650*2, 500, 640, 480];...
+                            [650*3, 500, 640, 480];...
+                            [650*3, 500, 640, 480]];
+            
+            
+            % Preallocating
+            Xtemp = zeros(pairs, graph_time_length, graph_freq_length);
+            Ytemp = zeros(pairs, graph_time_length, graph_freq_length);
+            Ztemp = zeros(pairs, graph_time_length, graph_freq_length);
+            
+            % Store processed signal
+            for i = 1:pairs
+                [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channels(i*2-1), channels(i*2));
+                Xtemp(i, :, :) = Xq;
+                Ytemp(i, :, :) = Yq;
+                Ztemp(i, :, :) = Zq;
+            end
+            
+            
+            % Open figures, initial surfaces and annotations
+            for i = 1:pairs
+                figTemp = figure('Name', 'Plot Animated Double Signal');
+                % Set window positions
+                if(i < 8)
+                    figTemp.Position = positionList(i, :);
+                else
+                    % In case of too many channel
+                    figTemp.Position = positionList(1, :);
+                end
+                surfTemp = surf(reshape(Xtemp(i, 1:2, :), [2, graph_freq_length]), reshape(Ytemp(i, 1:2, :), [2, graph_freq_length]), reshape(Ztemp(i, 1:2, :), [2, graph_freq_length]));
+                annoTemp = annotation('textbox', [0.15 0.15 0.3 0.15],...
+                    'String', ['Time: ', num2str(unitTimeLength*2), 'Sec'],...
+                    'FontSize',14, 'FitBoxToText','on', 'Color', 'white');
+                
+                figs(i) = figTemp;
+                surfaces(i) = surfTemp;
+                plotBaks(:, i) = obj.AddAuxiliaryInformation(figTemp, surfTemp, 'Animated', channels(i*2-1), channels(i*2));
+                annotations(i) = annoTemp;
+            end
+            
+            % Refresh figure respectively
+            for time = 3:graph_time_length
+                for i = 1:pairs
+                    annotations(i).String = ['Time: ', sprintf('%3.2f', unitTimeLength*time), ' (second)']; % sec/10
+                    if time*unitTimeLength <= obj.animatemaxlength
+                        surfaces(i).XData = reshape(Xtemp(i, 1:time, :), [time, graph_freq_length]);    % replace surface x values
+                        surfaces(i).YData = reshape(Ytemp(i, 1:time, :), [time, graph_freq_length]);     % replace surface y values
+                        surfaces(i).ZData = reshape(Ztemp(i, 1:time, :), [time, graph_freq_length]);     % replace surface z values
+                    else
+                        surfaces(i).XData = reshape(Xtemp(i, time-dataPointAnimateLength:time, :), [dataPointAnimateLength+1, graph_freq_length]);    % replace surface x values
+                        surfaces(i).YData = reshape(Ytemp(i, time-dataPointAnimateLength:time, :), [dataPointAnimateLength+1, graph_freq_length]);    % replace surface y values
+                        surfaces(i).ZData = reshape(Ztemp(i, time-dataPointAnimateLength:time, :), [dataPointAnimateLength+1, graph_freq_length]);    % replace surface z values
+                        obj.AddAuxiliaryInformation(figs(i), surfaces(i), 'AnimatedUpdate', channels(i*2-1), channels(i*2), plotBaks(:, i), unitTimeLength*(time-dataPointAnimateLength), unitTimeLength*time);
+                    end
+                    pause(pauseTime)
+                end
+            end
             
         end
     end

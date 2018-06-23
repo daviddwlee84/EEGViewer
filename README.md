@@ -60,7 +60,8 @@ Electroencephalography signal analysis and visualization
 7. Animated Plot
 
     ```matlab
-    viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (speed default is 2)
+    viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (default speed is 2)
+    viewer.AnimatedMultipleSignal(channelList, speed) % Plot all animated signal in channelList (must be even number, default speed is 2)
     ```
 
 * Quick view of data
@@ -134,10 +135,29 @@ Electroencephalography signal analysis and visualization
 
 [Matlab Annotation](http://www.mathworks.com/help/matlab/ref/annotation.html) - Textbox
 
-### Colormap
+### Plot settings
 
-[Matlab caxis](https://www.mathworks.com/help/matlab/ref/caxis.html) - set colormap limits
-[Matlab colormap](https://www.mathworks.com/help/matlab/ref/colormap.html)
+#### Colormap
+
+* [Matlab caxis](https://www.mathworks.com/help/matlab/ref/caxis.html) - set colormap limits
+* [Matlab colormap](https://www.mathworks.com/help/matlab/ref/colormap.html)
+
+#### Background color
+
+* Set background color to black - `set(gca,'Color','k')`
+
+### Figure (window)
+
+* [Matlab figure](https://www.mathworks.com/help/matlab/ref/figure.html)
+* [Matlab Figure Properties](https://www.mathworks.com/help/matlab/ref/matlab.ui.figure-properties.html) - set position
+
+### Sundries
+
+* Compare string recommand use strcmp() - `strcmp(string, 'to_compare')`
+
+* Convert a decimal to an integer
+    * fix to strip all the decimals - `fix  (1.9) % 1`
+    * round can change the integer part - `round(1.9) % 2`
 
 ## TODO
 
@@ -157,7 +177,7 @@ Electroencephalography signal analysis and visualization
 - [X] Change background color to black
 - [ ] Slider for animated plot
 - [ ] Accelerate button for animated plot
-- [ ] Multiple animated plot at same time
+- [X] Multiple animated plot at same time
 - [X] Maximum range period showed on screen
 - [ ] Advantage dot plot
 - [ ] Average bar plot
@@ -165,6 +185,7 @@ Electroencephalography signal analysis and visualization
 - [ ] Spectrum report
 - [ ] Event label
 - [ ] Seperate private and public [methods](https://www.mathworks.com/help/matlab/matlab_oop/method-attributes.html) / [properties](https://www.mathworks.com/help/matlab/matlab_oop/properties.html)
+- [ ] Improve multiple animated plot efficiency
 - [ ] Better Demo
 
 ## Other's function used
