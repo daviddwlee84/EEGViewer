@@ -44,12 +44,23 @@ Electroencephalography signal analysis and visualization
     viewer.SetMaxRange(maximum) % Default is the maximum of all channel's FFT data
     ```
 
-5. Plot
+5. Static Plot
 
     ```matlab
     viewer.PlotSingleSignal(channel)                % Plot single signal spectrum
     viewer.PlotDoubleSignal(channel1, channel2)     % Plot two signal spectrum symmetrically
-    viewer.AnimatedDoubleSignal(channel1, channel2) % Plot animated two signal symmetrically
+    ```
+
+6. Animated Plot Setting (Optional)
+
+    ```matlab
+    viewer.SetAnimateMaxLength(minutes) % Show only the range of time period on screen
+    ```
+
+7. Animated Plot
+
+    ```matlab
+    viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (speed default is 2)
     ```
 
 * Quick view of data
@@ -143,10 +154,11 @@ Electroencephalography signal analysis and visualization
 - [X] Color map / Drop low value / Set max
 - [X] Deprecate ori version of Plot (non-log version and non-interpolation version and reuse version)
 - [X] Demo on README
+- [X] Change background color to black
 - [ ] Slider for animated plot
 - [ ] Accelerate button for animated plot
 - [ ] Multiple animated plot at same time
-- [ ] Maximum range period showed on screen
+- [X] Maximum range period showed on screen
 - [ ] Advantage dot plot
 - [ ] Average bar plot
 - [ ] Average distribute pie chart
