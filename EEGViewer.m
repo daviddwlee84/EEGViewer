@@ -131,9 +131,9 @@ classdef EEGViewer < handle
         %> @retval ret return logarithm value of this method
         % ======================================================================
         function ret = DataProcess(obj)
-            Y = zeros(1, obj.L/obj.rng, obj.rng); % channel time length
-            P2 = zeros(1, obj.L/obj.rng, obj.rng);
-            P1 = zeros(1, obj.L/obj.rng, obj.rng/2+1);
+            Y = zeros(obj.numchannels, obj.totalrun, obj.rng); % channel time length
+            P2 = zeros(obj.numchannels, obj.totalrun, obj.rng);
+            P1 = zeros(obj.numchannels, obj.totalrun, obj.rng/2+1);
             obj.totalrun = obj.L/obj.rng; % Total iteration
             for channel = 1:obj.numchannels
                 for i = 1:obj.totalrun
@@ -180,12 +180,165 @@ classdef EEGViewer < handle
         function SetMaxRange(obj, maxrange)
             obj.maxrange = maxrange; 
         end
+        
+        % ======================================================================
+        %> @brief Add auxiliary information on figure
+        %> 
+        %> @param obj instance of the EEGViewer class.
+        %> @param type type of graph
+        % ======================================================================
+        function AddAuxiliaryInformation(obj, fig, surface, type, channel1, channel2)
+            
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
+            else
+                shift = false;
+            end
+            
+            % Switch to specific figure
+            fig;
+            
+            if strcmp(type, 'Single')
+                title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel1, 1:3)])
+                xlabel('f (Hz)')
+                ylabel('t (sec)')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+                colorbar
+                surface.EdgeColor = 'none';
 
+                % Set colormap max color to red
+                colormap jet
+                clm = colormap;
+                clm(end-7:end, 1) = 1;
+                colormap(clm)
+
+                if ~shift
+                    if obj.mindrop == 0
+                        if obj.maxrange == inf
+                            lim = caxis;
+                            caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                        else
+                            lim = caxis;
+                            caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                        end
+                    else
+                        if obj.maxrange == inf
+                            caxis([obj.mindrop, obj.fftdatamax])
+                        else
+                            caxis([obj.mindrop, obj.maxrange])
+                        end
+                    end
+                else
+                    if obj.maxrange == inf
+                        caxis([0, obj.fftdatamax - obj.mindrop])
+                    else
+                        caxis([0, obj.maxrange - obj.mindrop])
+                    end
+                end
+                
+                axis tight
+                grid on
+                hold on
+
+                % f(1) is 0Hz
+                %delta
+                [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
+                plot(x_delta, y_delta, 'b')
+                %theta
+                [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
+                plot(x_theta, y_theta, 'g')
+                %alpha
+                [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
+                plot(x_alpha, y_alpha, 'r')
+                %beta
+                [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
+                plot(x_beta, y_beta, 'y') 
+
+                hold off
+                
+            elseif strcmp(type, 'Double')
+                
+                title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
+                xlabel('f (Hz)')
+                ylabel('t (sec)')
+                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+                colorbar
+                surface.EdgeColor = 'none';
+
+                % Set colormap max color to RED
+                colormap Jet
+                clm = colormap;
+                clm(end-7:end, 1) = 1;
+                colormap(clm)
+
+                if obj.mindrop > 0
+                    shift = true; % shift minimum value to zero
+                else
+                    shift = false;
+                end
+
+                if ~shift
+                    if obj.mindrop == 0
+                        if obj.maxrange == inf
+                            lim = caxis;
+                            caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                        else
+                            lim = caxis;
+                            caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                        end
+                    else
+                        if obj.maxrange == inf
+                            caxis([obj.mindrop, obj.fftdatamax])
+                        else
+                            caxis([obj.mindrop, obj.maxrange])
+                        end
+                    end
+                else
+                    if obj.maxrange == inf
+                        caxis([0, obj.fftdatamax - obj.mindrop])
+                    else
+                        caxis([0, obj.maxrange - obj.mindrop])
+                    end
+                end
+
+                axis tight
+                view(180,15)         % set viewpoint
+                grid on
+                hold on
+
+                % f(1) is 0Hz
+                %delta
+                [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
+                plot(x_delta, y_delta, 'b')
+                [x_delta, y_delta] = meshgrid(-1:-1:-3, 1:obj.totalrun);
+                plot(x_delta, y_delta, 'b')
+                %theta
+                [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
+                plot(x_theta, y_theta, 'g')
+                [x_theta, y_theta] = meshgrid(-4:-1:-7, 1:obj.totalrun);
+                plot(x_theta, y_theta, 'g')
+                %alpha
+                [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
+                plot(x_alpha, y_alpha, 'r')
+                [x_alpha, y_alpha] = meshgrid(-8:-1:-12, 1:obj.totalrun);
+                plot(x_alpha, y_alpha, 'r')
+                %beta
+                [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
+                plot(x_beta, y_beta, 'y')
+                [x_beta, y_beta] = meshgrid(-13:-1:-30, 1:obj.totalrun);
+                plot(x_beta, y_beta, 'y') 
+
+                hold off
+            end
+            
+            
+            
+        end
         
         % ======================================================================
         %> @brief Plot Signal Signal
         %>        If obj.mindrop has set (~=0), shift to xy-plane.
-        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
+        %>        If obj.maxrange has set and greater than obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel the specific channel to plot.
@@ -225,68 +378,14 @@ classdef EEGViewer < handle
                 Zq = Zq - obj.mindrop;
             end
             
-            figure
-            s = surf(Xq, Yq, Zq);
+            fig = figure;
+            surface = surf(Xq, Yq, Zq);
             
-            title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel, 1:3)])
-            xlabel('f (Hz)')
-            ylabel('t (sec)')
-            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            colorbar
-            s.EdgeColor = 'none';
-
-            % Set colormap max color to red
-            colormap jet
-            clm = colormap;
-            clm(end-7:end, 1) = 1;
-            colormap(clm)
-
-            if ~shift
-                if obj.mindrop == 0
-                    if obj.maxrange == inf
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
-                    else
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
-                    end
-                else
-                    if obj.maxrange == inf
-                        caxis([obj.mindrop, obj.fftdatamax])
-                    else
-                        caxis([obj.mindrop, obj.maxrange])
-                    end
-                end
-            else
-                if obj.maxrange == inf
-                    caxis([0, obj.fftdatamax - obj.mindrop])
-                else
-                    caxis([0, obj.maxrange - obj.mindrop])
-                end
-            end
-
-            axis tight
-            grid on
-            hold on
-
-            % f(1) is 0Hz
-            %delta
-            [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
-            plot(x_delta, y_delta, 'b')
-            %theta
-            [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
-            plot(x_theta, y_theta, 'g')
-            %alpha
-            [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
-            plot(x_alpha, y_alpha, 'r')
-            %beta
-            [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
-            plot(x_beta, y_beta, 'y') 
             
-            hold off
-            
+            obj.AddAuxiliaryInformation(fig, surface, 'Single', channel)
             
         end
+        
         % ======================================================================
         %> @brief Double Signal Processing
         %>
@@ -343,10 +442,11 @@ classdef EEGViewer < handle
                 %Zq(end, :) = obj.mindrop;
             end
         end
+        
         % ======================================================================
         %> @brief Plot Double Signal Symmetrically
         %>        If obj.mindrop has set (~=0), shift to xy-plane.
-        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
+        %>        If obj.maxrange has set and greater than obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel1 the first specific channel to plot.
@@ -356,87 +456,17 @@ classdef EEGViewer < handle
 
             [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
             
-            figure
-            s = surf(Xq, Yq, Zq);
-
-            title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
-            xlabel('f (Hz)')
-            ylabel('t (sec)')
-            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            colorbar
-            s.EdgeColor = 'none';
-
-            % Set colormap max color to RED
-            colormap Jet
-            clm = colormap;
-            clm(end-7:end, 1) = 1;
-            colormap(clm)
+            fig = figure;
+            surface = surf(Xq, Yq, Zq);
             
-            if obj.mindrop > 0
-                shift = true; % shift minimum value to zero
-            else
-                shift = false;
-            end
-            
-            if ~shift
-                if obj.mindrop == 0
-                    if obj.maxrange == inf
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
-                    else
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
-                    end
-                else
-                    if obj.maxrange == inf
-                        caxis([obj.mindrop, obj.fftdatamax])
-                    else
-                        caxis([obj.mindrop, obj.maxrange])
-                    end
-                end
-            else
-                if obj.maxrange == inf
-                    caxis([0, obj.fftdatamax - obj.mindrop])
-                else
-                    caxis([0, obj.maxrange - obj.mindrop])
-                end
-            end
-            
-            axis tight
-            view(180,15)         % set viewpoint
-            grid on
-            hold on
-
-            % f(1) is 0Hz
-            %delta
-            [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
-            plot(x_delta, y_delta, 'b')
-            [x_delta, y_delta] = meshgrid(-1:-1:-3, 1:obj.totalrun);
-            plot(x_delta, y_delta, 'b')
-            %theta
-            [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
-            plot(x_theta, y_theta, 'g')
-            [x_theta, y_theta] = meshgrid(-4:-1:-7, 1:obj.totalrun);
-            plot(x_theta, y_theta, 'g')
-            %alpha
-            [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
-            plot(x_alpha, y_alpha, 'r')
-            [x_alpha, y_alpha] = meshgrid(-8:-1:-12, 1:obj.totalrun);
-            plot(x_alpha, y_alpha, 'r')
-            %beta
-            [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
-            plot(x_beta, y_beta, 'y')
-            [x_beta, y_beta] = meshgrid(-13:-1:-30, 1:obj.totalrun);
-            plot(x_beta, y_beta, 'y') 
-            
-            hold off
+            obj.AddAuxiliaryInformation(fig, surface, 'Double', channel1, channel2)
 
         end
         
         % ======================================================================
         %> @brief Animated Plot Double Signal
         %>        If obj.mindrop has set (~=0), shift to xy-plane.
-        %>        If obj.maxrange has set and greater obj.fftdatamax, set max colormap as it.
+        %>        If obj.maxrange has set and greater than obj.fftdatamax, set max colormap as it.
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param channel1 the first specific channel to plot.
@@ -446,79 +476,11 @@ classdef EEGViewer < handle
             
             [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
             
-            figure
-            s = surf(Xq(1:2, :), Yq(1:2, :), Zq(1:2, :)); % surface must be a matrix (can't be a line)
+            fig = figure;
+            surface = surf(Xq(1:2, :), Yq(1:2, :), Zq(1:2, :)); % surface must be a matrix (can't be a line)
             
-            title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
-            xlabel('f (Hz)')
-            ylabel('t (sec)')
-            zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
-            colorbar
-            s.EdgeColor = 'none';
-
-            % Set colormap max color to RED
-            colormap Jet
-            clm = colormap;
-            clm(end-7:end, 1) = 1;
-            colormap(clm)
-            
-            if obj.mindrop > 0
-                shift = true; % shift minimum value to zero
-            else
-                shift = false;
-            end
-
-            if ~shift
-                if obj.mindrop == 0
-                    if obj.maxrange == inf
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
-                    else
-                        lim = caxis;
-                        caxis([(lim(1)+lim(2))/2, obj.maxrange])
-                    end
-                else
-                    if obj.maxrange == inf
-                        caxis([obj.mindrop, obj.fftdatamax])
-                    else
-                        caxis([obj.mindrop, obj.maxrange])
-                    end
-                end
-            else
-                if obj.maxrange == inf
-                    caxis([0, obj.fftdatamax - obj.mindrop])
-                else
-                    caxis([0, obj.maxrange - obj.mindrop])
-                end
-            end
-
-            axis tight
-            view(200,15)         % set viewpoint
-            grid on
-            hold on
-            
-            % f(1) is 0Hz
-            %delta
-            [x_delta, y_delta] = meshgrid(1:3, 1:obj.totalrun);
-            plot(x_delta, y_delta, 'b')
-            [x_delta, y_delta] = meshgrid(-1:-1:-3, 1:obj.totalrun);
-            plot(x_delta, y_delta, 'b')
-            %theta
-            [x_theta, y_theta] = meshgrid(4:7, 1:obj.totalrun);
-            plot(x_theta, y_theta, 'g')
-            [x_theta, y_theta] = meshgrid(-4:-1:-7, 1:obj.totalrun);
-            plot(x_theta, y_theta, 'g')
-            %alpha
-            [x_alpha, y_alpha] = meshgrid(8:12, 1:obj.totalrun);
-            plot(x_alpha, y_alpha, 'r')
-            [x_alpha, y_alpha] = meshgrid(-8:-1:-12, 1:obj.totalrun);
-            plot(x_alpha, y_alpha, 'r')
-            %beta
-            [x_beta, y_beta] = meshgrid(13:30, 1:obj.totalrun);
-            plot(x_beta, y_beta, 'y')
-            [x_beta, y_beta] = meshgrid(-13:-1:-30, 1:obj.totalrun);
-            plot(x_beta, y_beta, 'y') 
-            
+            obj.AddAuxiliaryInformation(fig, surface, 'Double', channel1, channel2)
+    
             a = annotation('textbox', [0.15 0.15 0.3 0.15],...
                 'String', ['Time: ', num2str(obj.totalrun/length(Xq(:, 1))*2), 'Sec'],...
                 'FontSize',14, 'FitBoxToText','on');
@@ -526,9 +488,9 @@ classdef EEGViewer < handle
             % 3 => already plot 2
             for time = 3:length(Xq(:, 1)) % 3:obj.totalrun*10
                 a.String = ['Time: ', sprintf('%3.2f', (obj.totalrun/length(Xq(:, 1)))*time), ' (second)']; % sec/10
-                s.XData = Xq(1:time, :);    % replace surface x values
-                s.YData = Yq(1:time, :);    % replace surface y values
-                s.ZData = Zq(1:time, :);    % replace surface z values
+                surface.XData = Xq(1:time, :);    % replace surface x values
+                surface.YData = Yq(1:time, :);    % replace surface y values
+                surface.ZData = Zq(1:time, :);    % replace surface z values
                 pause(obj.totalrun/length(Xq(:, 1))) % 0.1
             end
             
