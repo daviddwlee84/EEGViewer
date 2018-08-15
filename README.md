@@ -175,6 +175,8 @@ Electroencephalography signal analysis and visualization
 - [X] Deprecate ori version of Plot (non-log version and non-interpolation version and reuse version)
 - [X] Demo on README
 - [X] Change background color to black
+- [ ] 3D brain heat map
+- [ ] Play video in specific range
 - [ ] Slider for animated plot
 - [ ] Accelerate button for animated plot
 - [X] Multiple animated plot at same time
@@ -215,3 +217,11 @@ Electroencephalography signal analysis and visualization
 
 * [EEGLAB](https://sccn.ucsd.edu/eeglab/index.php)
 * [Wiki Tutorial](https://sccn.ucsd.edu/wiki/EEGLAB_TUTORIAL_OUTLINE)
+
+### MOOCs
+
+* [NTHU Scientific Computing](http://ocw.nthu.edu.tw/ocw/index.php?page=course&cid=53)
+    * [**Scientific Computing**](http://mirlab.org/jang/courses/scientificComputing/)
+        * [Using Python within Matlab](https://www.mathworks.com/help/matlab/getting-started-with-python.html)
+        * [Some Matlab Toolboxes](http://mirlab.org/jang/matlab/toolbox/)
+    * [Professor](http://mirlab.org/jang/)
