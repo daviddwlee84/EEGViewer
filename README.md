@@ -4,7 +4,7 @@ Electroencephalography signal analysis and visualization
 
 ## Demo
 
-![Animated](demo/Animated.gif) ![DoubleSignal](demo/DoubleSignal.png)
+![SliderDoubleSignal](demo/SliderDoubleSignal.png) ![Animated](demo/Animated.gif) ![DoubleSignal](demo/DoubleSignal.png)
 
 ## Basic Usage
 
@@ -54,7 +54,7 @@ Electroencephalography signal analysis and visualization
 6. Animated Plot Setting (Optional)
 
     ```matlab
-    viewer.SetAnimateMaxLength(minutes) % Show only the range of time period on screen
+    viewer.SetAnimateMaxLength(minutes) % Show only the range of the time period on screen
     ```
 
 7. Animated Plot
@@ -63,6 +63,12 @@ Electroencephalography signal analysis and visualization
     viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (default speed is 2)
     viewer.AnimatedMultipleSignal(channelList, speed) % Plot all animated signal in channelList (must be even number, default speed is 2)
     ```
+8. Slider Double Singal Plot
+
+    ```matlab
+    viewer.SliderDoublePlot(channel1, channel2, secLength) % Show only the range of time period on screen
+    ```
+    Ps. It share the animatemaxlength global variable and same setting of Animated Plot function in AddAuxiliaryInformation for now.
 
 * Quick view of data
 
@@ -175,6 +181,8 @@ Electroencephalography signal analysis and visualization
 - [X] Deprecate ori version of Plot (non-log version and non-interpolation version and reuse version)
 - [X] Demo on README
 - [X] Change background color to black
+- [X] Slider for double signal plot
+- [ ] Change `surface` variable name
 - [ ] 3D brain heat map
 - [ ] Play video in specific range
 - [ ] Slider for animated plot

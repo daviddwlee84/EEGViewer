@@ -368,7 +368,7 @@ classdef EEGViewer < handle
                 end
 
                 axis tight
-                view(180,15)         % set viewpoint
+                view(190,30)         % set viewpoint
                 grid on
                 hold on
                 
@@ -454,11 +454,10 @@ classdef EEGViewer < handle
                 Zq = Zq - obj.mindrop;
             end
             
-            fig = figure('Name', ' Plot Single Signal');
+            fig = figure('Name', 'Plot Single Signal');
             surface = surf(Xq, Yq, Zq);
             
-            
-            obj.AddAuxiliaryInformation(fig, surface, 'Single', channel)
+            obj.AddAuxiliaryInformation(fig, surface, 'Single', channel);
             
         end
 
@@ -532,13 +531,71 @@ classdef EEGViewer < handle
 
             [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
             
-            fig = figure('Name', ' Plot Double Signal');
+            fig = figure('Name', 'Plot Double Signal');
             surface = surf(Xq, Yq, Zq);
             
-            obj.AddAuxiliaryInformation(fig, surface, 'Double', channel1, channel2)
+            obj.AddAuxiliaryInformation(fig, surface, 'Double', channel1, channel2);
 
         end
+
+        % ======================================================================
+        %> @brief Slider Double Plot
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param channel1 the first specific channel to plot.
+        %> @param channel2 the second specific channel to plot.
+        %> @param range initial time length of the showing part (sec)
+        % ======================================================================
+        function SliderDoublePlot(obj, channel1, channel2, secLength)
+
+            [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channel1, channel2);
+
+            unitTimeLength = obj.totalsecond/length(Xq(:, 1));
+            dataPointLength = fix(secLength/unitTimeLength);
+
+            obj.animatemaxlength = secLength; % Share the variable with animated plot)
+
+            fig = figure('Name', 'Slider Double Signal Plot', 'visible', 'off');
+
+            axes(fig, 'Position', [0.13, 0.39, 0.77, 0.54]); % Set the axes position
+
+            surface = surf(Xq(1:dataPointLength, :), Yq(1:dataPointLength, :), Zq(1:dataPointLength, :));
+            plotBak = obj.AddAuxiliaryInformation(fig, surface, 'Animated', channel1, channel2);
+
+            panel = uipanel(fig, 'Position', [0.1, 0.1, 0.8, 0.2]); % UI Panel
+            slider = uicontrol(panel, 'Style', 'slider', 'Position', [30, 30, 340, 23], ...
+                                'min', secLength, 'max', obj.totalsecond, 'Callback', @surfrange); % Slider bar
+            slider.Value = secLength;
+            slabel1 = uicontrol(panel, 'Style', 'text', 'Position', [10, 30, 23, 23], 'String', 0); % Left Label
+            slabel2 = uicontrol(panel, 'Style', 'text', 'Position', [380, 30, 23, 23], 'String', obj.totalsecond); % Right Label
+            slabel3 = uicontrol(panel, 'Style', 'text', 'Position', [100, 10, 200, 23], ...,
+                                'String', sprintf('Time Range: %5.2f ~ %5.2f (sec)', 0, secLength)); % Underside message
+            
+            fig.Visible = 'on'; % Show the figure when all the elements are loaded
+
+            function surfrange(source, callbackdata)
+                val = source.Value;
+                slabel3.String = sprintf('Time Range: %5.2f ~ %5.2f (sec)', val-secLength, val);
+                interpolationLength = length(Xq(:, 1));
+                time = fix(interpolationLength*val/obj.totalsecond)
+                dataPointLength = fix(secLength/unitTimeLength)
+
+                % Fix the problem that starting point less than 1
+                if time <= dataPointLength
+                    startTime = 1
+                    time = dataPointLength
+                else
+                    startTime = time - dataPointLength
+                end
+
+                surface.XData = Xq(startTime:time, :);    % replace surface x values
+                surface.YData = Yq(startTime:time, :);    % replace surface y values
+                surface.ZData = Zq(startTime:time, :);    % replace surface z values
+                obj.AddAuxiliaryInformation(fig, surface, 'AnimatedUpdate', channel1, channel2, plotBak, Yq(startTime+1, 1), unitTimeLength*time);
+            end
         
+        end
+
         % ======================================================================
         %> @brief Set Animate Maximum Time Length (ms)
         %>
