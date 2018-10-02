@@ -212,7 +212,7 @@ classdef EEGViewer < handle
                 title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel1, 1:3)])
                 xlabel('f (Hz)')
                 ylabel('t (sec)')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+                zlabel('10\timeslog_{10}(|P1(f)|) (\muV^{2}/Hz)')
                 colorbar
                 surface.EdgeColor = 'none';
 
@@ -324,7 +324,7 @@ classdef EEGViewer < handle
                 title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
                 xlabel('f (Hz)')
                 ylabel('t (sec)')
-                zlabel('10*log_{10}(|P1(f)|) (\muV^{2}/Hz)')
+                zlabel('10\timeslog_{10}(|P1(f)|) (\muV^{2}/Hz)')
                 colorbar
                 surface.EdgeColor = 'none';
                 
@@ -577,15 +577,15 @@ classdef EEGViewer < handle
                 val = source.Value;
                 slabel3.String = sprintf('Time Range: %5.2f ~ %5.2f (sec)', val-secLength, val);
                 interpolationLength = length(Xq(:, 1));
-                time = fix(interpolationLength*val/obj.totalsecond)
-                dataPointLength = fix(secLength/unitTimeLength)
+                time = fix(interpolationLength*val/obj.totalsecond);
+                dataPointLength = fix(secLength/unitTimeLength);
 
                 % Fix the problem that starting point less than 1
                 if time <= dataPointLength
-                    startTime = 1
-                    time = dataPointLength
+                    startTime = 1;
+                    time = dataPointLength;
                 else
-                    startTime = time - dataPointLength
+                    startTime = time - dataPointLength;
                 end
 
                 surface.XData = Xq(startTime:time, :);    % replace surface x values

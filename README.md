@@ -63,6 +63,7 @@ Electroencephalography signal analysis and visualization
     viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (default speed is 2)
     viewer.AnimatedMultipleSignal(channelList, speed) % Plot all animated signal in channelList (must be even number, default speed is 2)
     ```
+
 8. Slider Double Singal Plot
 
     ```matlab
