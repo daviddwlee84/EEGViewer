@@ -183,6 +183,7 @@ Electroencephalography signal analysis and visualization
 - [X] Demo on README
 - [X] Change background color to black
 - [X] Slider for double signal plot
+- [ ] Support *.txt format
 - [ ] Change `surface` variable name
 - [ ] 3D brain heat map
 - [ ] Play video in specific range
@@ -203,12 +204,33 @@ Electroencephalography signal analysis and visualization
 
 * read_edf.m - *.edf data loader
 
-### EEGLAB
+### from EEGLAB
 
 * eegfilt.m - FIR Filter
 * eegplot.m - Scroll view on raw data
 * textsc.m - Places text in screen coordinates
 * fastif.m - Fast if
+
+## Popular Matlab Toolbox
+
+### EEGLAB
+
+* [EEGLAB](https://sccn.ucsd.edu/eeglab/index.php)
+* [Wiki Tutorial](https://sccn.ucsd.edu/wiki/EEGLAB_TUTORIAL_OUTLINE)
+
+### BCILAB
+
+Open Source Matlab Toolbox for Brain-Computer Interface research
+
+* [BCILAB](https://sccn.ucsd.edu/wiki/BCILAB)
+
+### ERPLAB
+
+* [ERPLAB](https://erpinfo.org/erplab/)
+
+### FieldTrip
+
+* [FieldTrip](http://www.fieldtriptoolbox.org/)
 
 ## Related Links
 
@@ -222,11 +244,6 @@ Electroencephalography signal analysis and visualization
 * [MATLAB Graphic User Interface for Biomedical Signal Analysis](http://www.ym.edu.tw/~cflu/CFLu_course_matlabgui.html)
     * [MATLAB圖形使用者介面應用於生醫訊號分析](https://www.youtube.com/playlist?list=PLx_IWc-RN82smDOJpZAi8K8eWytMa6oh0)
 
-### EEGLAB
-
-* [EEGLAB](https://sccn.ucsd.edu/eeglab/index.php)
-* [Wiki Tutorial](https://sccn.ucsd.edu/wiki/EEGLAB_TUTORIAL_OUTLINE)
-
 ### MOOCs
 
 * [NTHU Scientific Computing](http://ocw.nthu.edu.tw/ocw/index.php?page=course&cid=53)
@@ -234,3 +251,9 @@ Electroencephalography signal analysis and visualization
         * [Using Python within Matlab](https://www.mathworks.com/help/matlab/getting-started-with-python.html)
         * [Some Matlab Toolboxes](http://mirlab.org/jang/matlab/toolbox/)
     * [Professor](http://mirlab.org/jang/)
+
+### OpenBCI
+
+* [OpenBCI Documentation](http://docs.openbci.com/)
+    * [Doc Github](https://github.com/openbci/docs)
+    * [3rd Party Software - Matlab](http://docs.openbci.com/3rd%20Party%20Software/01-Matlab)
