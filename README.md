@@ -12,6 +12,8 @@ Electroencephalography signal analysis and visualization
 
 1. Input Data
 
+    * Now support regular *.edf and OpenBCI format *.txt
+
     ```matlab
     viewer = EEGViewer('path/to/your/data.edf');
     ```
@@ -183,7 +185,7 @@ Electroencephalography signal analysis and visualization
 - [X] Demo on README
 - [X] Change background color to black
 - [X] Slider for double signal plot
-- [ ] Support *.txt format
+- [X] Support *.txt format
 - [ ] Change `surface` variable name
 - [ ] 3D brain heat map
 - [ ] Play video in specific range
@@ -200,8 +202,9 @@ Electroencephalography signal analysis and visualization
 - [ ] Improve multiple animated plot efficiency
 - [ ] Better Demo
 
-## Other's function used
+## Other function used
 
+* readOpenBCItxt.m - load *.txt output from OpenBCI's machine
 * read_edf.m - *.edf data loader
 
 ### from EEGLAB

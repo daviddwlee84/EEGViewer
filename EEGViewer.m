@@ -71,7 +71,31 @@ classdef EEGViewer < handle
         % ======================================================================        
         function Load(obj, path)
             
-            [data, header] = read_edf(path);
+            % Determine the file type
+            [~, ~, ext] = fileparts(path);
+            
+            if strcmp(ext, '.edf')
+                % Regular *.edf file
+                [data, header] = read_edf(path);
+            elseif strcmp(ext, '.txt')
+                % OpenBCI format *.txt file
+                data = readOpenBCItxt(path);
+                header.samplingrate = 250; % Default is 250Hz
+                [m, n] = size(data);
+                
+                % Cut the data to multiple of single second
+                header.numtimeframes = n - mod(n, header.samplingrate);
+                data = data(:, 1:header.numtimeframes);
+                
+                header.numchannels = m;
+                channels = cell(m, 1);
+                for i = 1:m
+                    channels{i} = num2str(i, '%03d');
+                end
+                header.channels = cell2mat(channels);
+            else
+                error('Unsupported data type! (current support edf and OpenBCI txt format)')
+            end
             
             obj.Data = data;
             
@@ -83,7 +107,7 @@ classdef EEGViewer < handle
             obj.L = header.numtimeframes;   % Length of signal
             obj.t = (0:obj.L-1)*obj.T;      % Time vector
 
-            obj.rng = 1000; % Proceed fft every rng data
+            obj.rng = obj.Fs; % Proceed fft every rng data (origin: 1000)
             obj.totalsecond = obj.L/obj.rng; % Total iteration
             
             obj.numchannels = header.numchannels; % Number of channels
