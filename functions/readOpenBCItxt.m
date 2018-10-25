@@ -49,3 +49,5 @@ fclose(fileID);
 
 %% Create output variable
 data = [dataArray{1:end-1}]';
+% Drop first column (SampleIndex) and last column (Timestamp)
+data = data(2:11, :);
