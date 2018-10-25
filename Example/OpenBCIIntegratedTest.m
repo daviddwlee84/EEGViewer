@@ -11,6 +11,9 @@ viewer.FIRfiltering(1, 30);
 viewer.SetMinDrop(20);
 viewer.SetMaxRange(40);
 
+% Set channel location name
+viewer.SetChannelLocationName('F3', 'F4', 'C3', 'C4', 'O1', 'O2', 'TP9', 'TP10')
+
 % Single Signal
 viewer.PlotSingleSignal(1);
 

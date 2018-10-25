@@ -79,6 +79,12 @@ Electroencephalography signal analysis and visualization
     viewer.ScrollView()
     ```
 
+* Add channel location name (for OpenBCI) (Optional)
+
+    ```matlab
+    viewer.SetChannelLocationName(ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8)
+    ```
+
 ## EEG Notes
 
 ### Wave Patterns
@@ -185,7 +191,8 @@ Electroencephalography signal analysis and visualization
 - [X] Demo on README
 - [X] Change background color to black
 - [X] Slider for double signal plot
-- [X] Support *.txt format
+- [X] Support *.txt format (for OpenBCI)
+- [X] Set Channel Location Name and Color (for OpenBCI)
 - [ ] Change `surface` variable name
 - [ ] 3D brain heat map
 - [ ] Play video in specific range
@@ -260,3 +267,7 @@ Open Source Matlab Toolbox for Brain-Computer Interface research
 * [OpenBCI Documentation](http://docs.openbci.com/)
     * [Doc Github](https://github.com/openbci/docs)
     * [3rd Party Software - Matlab](http://docs.openbci.com/3rd%20Party%20Software/01-Matlab)
+
+### Python EEG
+
+* [Pbrain repository](https://github.com/nipy/pbrain)

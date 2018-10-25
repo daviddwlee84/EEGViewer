@@ -34,6 +34,9 @@ classdef EEGViewer < handle
 
         %> Channel names
         channelNames
+
+        % Channel location name (OpenBCI)
+        channelLocationName
         
         %> Min drop
         mindrop
@@ -90,9 +93,11 @@ classdef EEGViewer < handle
                 header.numchannels = m;
                 channels = cell(m, 1);
                 for i = 1:m
-                    channels{i} = num2str(i, '%03d');
+                   channels{i} = num2str(i, '%03d');
                 end
-                header.channels = cell2mat(channels);
+                channels_temp = cell2mat(channels);
+                channels_temp(1:8, :) = ['Gy1'; ' P2'; ' B3'; ' G4'; ' Y5'; ' O6'; ' R7'; ' C8'];
+                header.channels = channels_temp;
             else
                 error('Unsupported data type! (current support edf and OpenBCI txt format)')
             end
@@ -118,11 +123,40 @@ classdef EEGViewer < handle
             obj.maxrange = inf; % Manual maximum value
             
             obj.animatemaxlength = 3*60; % Maximum time length of animated plot (Default 3 mins)
+
+            obj.channelLocationName = false; % Initial false unless call SetChannelLocationName()
+        end
+        
+        % ======================================================================
+        %> @brief Set channel location name (for OpenBCI)
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param ch1 append channel 1 name after original channel color and number
+        %> @param ch2 append channel 2 name after original channel color and number
+        %> @param ch3 append channel 3 name after original channel color and number
+        %> @param ch4 append channel 4 name after original channel color and number
+        %> @param ch5 append channel 5 name after original channel color and number
+        %> @param ch6 append channel 6 name after original channel color and number
+        %> @param ch7 append channel 7 name after original channel color and number
+        %> @param ch8 append channel 8 name after original channel color and number
+        % ======================================================================
+        function SetChannelLocationName(obj, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8)
+            channels = cell(8, 1);
+            channels{1} = ch1;
+            channels{2} = ch2;
+            channels{3} = ch3;
+            channels{4} = ch4;
+            channels{5} = ch5;
+            channels{6} = ch6;
+            channels{7} = ch7;
+            channels{8} = ch8;
+            obj.channelLocationName = channels;
         end
         
         % ======================================================================
         %> @brief Scroll view on data (Optional)
         %>
+        %> @param obj instance of the EEGViewer class.
         % ======================================================================
         function ScrollView(obj)
             eegplot(obj.Data, 'srate', obj.Fs, 'title', 'Scroll View', 'plottitle', ['Scroll view on data of ', obj.Filename], 'xgrid', 'on', 'ygrid', 'on')
@@ -132,8 +166,8 @@ classdef EEGViewer < handle
         %> @brief Band-pass filter data using two-way least-squares FIR filtering (Optional)
         %>
         %> @param obj instance of the EEGViewer class.
-        %> @param min_filter instance of the EEGViewer class.
-        %> @param max_filter instance of the EEGViewer class.
+        %> @param min_filter floor threshold (uaually be 1 Hz)
+        %> @param max_filter ceiling threshold (usually be 30 Hz)
         % ======================================================================
         function FIRfiltering(obj, min_filter, max_filter)
             obj.Data = eegfilt(obj.Data, obj.Fs, min_filter, max_filter);
@@ -233,7 +267,12 @@ classdef EEGViewer < handle
             figure(fig);
             
             if strcmp(type, 'Single')
-                title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel1, 1:3)])
+                if(~iscell(obj.channelLocationName))
+                    title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel1, 1:3)])
+                else
+                    title(['Single-Sided Amplitude Spectrum of channel ', obj.channelNames(channel1, 1:3), '-', obj.channelLocationName{channel1}])
+                end
+
                 xlabel('f (Hz)')
                 ylabel('t (sec)')
                 zlabel('10\timeslog_{10}(|P1(f)|) (\muV^{2}/Hz)')
@@ -345,7 +384,12 @@ classdef EEGViewer < handle
                 
             else % Double or Animated initialization
                 
-                title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
+                if(~iscell(obj.channelLocationName))
+                    title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)])
+                else
+                    title(['Comparison of channel ', obj.channelNames(channel1, 1:3), '-', obj.channelLocationName{channel1},...
+                                            ' and ', obj.channelNames(channel2, 1:3), '-', obj.channelLocationName{channel2}])
+                end
                 xlabel('f (Hz)')
                 ylabel('t (sec)')
                 zlabel('10\timeslog_{10}(|P1(f)|) (\muV^{2}/Hz)')
