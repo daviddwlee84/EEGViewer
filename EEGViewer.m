@@ -675,6 +675,41 @@ classdef EEGViewer < handle
         end
 
         % ======================================================================
+        %> @brief Multiple Slider Double Plot
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param channels the channel ids in pairs delivered in vector
+        % ======================================================================
+        function SliderMultiplePlot(obj, channels, secLength)
+            if length(channels) > obj.numchannels
+                error('Too many channels')
+            end
+            if mod(length(channels), 2) == 1
+                error('Channels amount must be even number')
+            end
+
+            % define constant
+            pairs = length(channels)/2;
+            total_rows = max(floor(pairs/2), 1);
+            total_cols = pairs/total_rows;
+ 
+            fig = figure('Name', 'Multiple Double Signal with Slider');
+            
+            % resize the figure according to the subplot number
+            width_height = fig.Position(3:4);
+            width_height = width_height.*([total_cols, total_rows]);
+            fig.Position(3:4) = width_height;
+            
+            x = linspace(0,10);
+            for i = 1:pairs
+                ax(i) = subplot(total_rows, total_cols, i)
+                y = i*sin(x);
+                plot(x, y)
+                title(['subplot of ', int2str(i)])
+            end
+        end
+
+        % ======================================================================
         %> @brief Set Animate Maximum Time Length (ms)
         %>
         %> @param obj instance of the EEGViewer class.

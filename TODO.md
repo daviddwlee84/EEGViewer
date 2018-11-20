@@ -2,7 +2,8 @@
 
 ## Recent
 
-- [X] Change background color to black
+- [X] Open mutiple subplot and allocate position automatically
+- [X] Resize the figure automatically according to the number of subplot
 - [ ] Set minimum to not be 0 (cover the bottom)
 
 ## To-Do List
@@ -42,3 +43,4 @@
 - [X] Set Channel Location Name and Color (for OpenBCI)
 - [X] Multiple animated plot at same time
 - [X] Maximum range period showed on screen
+- [X] Change background color to black
