@@ -527,6 +527,9 @@ classdef EEGViewer < handle
             end
             if shift
                 Zq = Zq - obj.mindrop;
+                % Cover hole...
+                hole = Zq <= 0.87; % hole
+                Zq(hole) = 0.87;
             end
             
             fig = figure('Name', 'Plot Single Signal');
@@ -590,9 +593,9 @@ classdef EEGViewer < handle
             end
             if shift
                 Zq = Zq - obj.mindrop;
-                % Cover hole?!
-                %Zq(1, :) = obj.mindrop;
-                %Zq(end, :) = obj.mindrop;
+                % Cover hole...
+                hole = Zq <= 0.87; % hole
+                Zq(hole) = 0.87;
             end
         end
         
