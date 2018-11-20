@@ -47,7 +47,12 @@ classdef EEGViewer < handle
         
         %> Animate max length (ms)
         animatemaxlength
-        
+
+        %> Compress constant
+        compress
+
+        %> ZLim => use to compress graph down?!
+        zlimBak
     end
     
     methods
@@ -129,6 +134,8 @@ classdef EEGViewer < handle
             obj.animatemaxlength = 3*60; % Maximum time length of animated plot (Default 3 mins)
 
             obj.channelLocationName = false; % Initial false unless call SetChannelLocationName()
+
+            obj.compress = 1; % Initial compress constant
         end
         
         % ======================================================================
@@ -155,6 +162,19 @@ classdef EEGViewer < handle
             channels{7} = ch7;
             channels{8} = ch8;
             obj.channelLocationName = channels;
+        end
+
+        % ======================================================================
+        %> @brief Compress graph down
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param compress compress constant
+        % ======================================================================
+        function SetCompressConstant(obj, constant)
+            if constant <= 1
+                error('constant must greater than 1')
+            end
+            obj.compress = constant;
         end
         
         % ======================================================================
@@ -320,6 +340,14 @@ classdef EEGViewer < handle
                 end
                 
                 axis tight
+
+                % used to compress graph down
+                if obj.compress > 1
+                    current_zlim = zlim;
+                    obj.zlimBak = current_zlim;
+                    zlim([1, obj.compress] .* current_zlim);
+                end
+
                 grid on
                 hold on
 
@@ -338,6 +366,11 @@ classdef EEGViewer < handle
 
                 hold off
             elseif strcmp(type, 'AnimatedUpdate')
+
+                % used to compress graph down
+                if obj.compress > 1
+                    zlim([1, obj.compress] .* obj.zlimBak)
+                end
 
                 update_time_range = start_time:end_time+1;
                 
@@ -444,6 +477,14 @@ classdef EEGViewer < handle
 
                 axis tight
                 view(190,30)         % set viewpoint
+
+                % used to compress graph down
+                if obj.compress > 1
+                    current_zlim = zlim;
+                    obj.zlimBak = current_zlim;
+                    zlim([1, obj.compress] .* current_zlim);
+                end
+
                 grid on
                 hold on
                 
@@ -575,7 +616,13 @@ classdef EEGViewer < handle
                     end
     
                     axis tight
-                    axs(i).View = [180, 65];         % set viewpoint
+                    axs(i).View = [180, 30];         % set viewpoint
+                    % used to compress graph down
+                    if obj.compress > 1
+                        current_zlim = zlim;
+                        obj.zlimBak = current_zlim;
+                        zlim([1, obj.compress] .* current_zlim);
+                    end
                     
                     grid on
                     hold on
@@ -616,6 +663,13 @@ classdef EEGViewer < handle
                 end
             elseif strcmp(type, 'DoubleSliderUpdate')
                 for j=1:length(axs)
+
+                    subplot(axs(j));
+
+                    % used to compress graph down
+                    if obj.compress > 1
+                        zlim([1, obj.compress] .* obj.zlimBak)
+                    end
 
                     update_time_range = start_time:end_time+1;
                 

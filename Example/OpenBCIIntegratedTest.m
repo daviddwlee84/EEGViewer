@@ -4,7 +4,7 @@ close all
 viewer = EEGViewer('Example/OpenBCI_testdata.txt');
 
 % Quick view
-viewer.ScrollView()
+%viewer.ScrollView()
 
 % Preprocess
 viewer.FIRfiltering(1, 30);
@@ -23,6 +23,9 @@ viewer.PlotDoubleSignal(2, 3);
 % Animate Double Signal
 viewer.SetAnimateMaxLength(0.1); % 6 sec
 viewer.AnimatedDoubleSignal(4, 5) % Default 2 time speed
+
+% Set compress constant
+viewer.SetCompressConstant(2)
 
 % Slider Double Signal
 viewer.SliderDoublePlot(6, 7, 10) % Data range is 10 sec

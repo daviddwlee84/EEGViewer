@@ -2,10 +2,12 @@
 
 ## Recent
 
-- [X] Add Auxiliary Information to multiple slider plot (and update)
+- [X] Compress graph down
 
 ## To-Do List
 
+- [ ] Better slider bar pannel generating place
+- [ ] When change background color to black, then ScrollView()'s signal will disappear, need to be fixed
 - [ ] Change `surface` variable name
 - [ ] 3D brain heat map
 - [ ] Play video in specific range
@@ -46,3 +48,4 @@
 - [X] Open mutiple subplot and allocate position automatically
 - [X] Resize the figure automatically according to the number of subplot
 - [X] Multiple Slider plot with slider
+- [X] Add Auxiliary Information to multiple slider plot (and update)

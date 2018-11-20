@@ -46,34 +46,42 @@ Electroencephalography signal analysis and visualization
     viewer.SetMaxRange(maximum) % Default is the maximum of all channel's FFT data
     ```
 
-5. Static Plot
+5. SetCompressConstant (Optional)
+
+    ```matlab
+    viewer.SetCompressConstant(constant) % Default is 1 (don't compress)
+    ```
+
+    Only use it when you want to compress the graph down (i.e. expand the limit of Z-axis).
+
+6. Static Plot
 
     ```matlab
     viewer.PlotSingleSignal(channel)                % Plot single signal spectrum
     viewer.PlotDoubleSignal(channel1, channel2)     % Plot two signal spectrum symmetrically
     ```
 
-6. Animated Plot Setting (Optional)
+7. Animated Plot Setting (Optional)
 
     ```matlab
     viewer.SetAnimateMaxLength(minutes) % Show only the range of the time period on screen
     ```
 
-7. Animated Plot
+8. Animated Plot
 
     ```matlab
     viewer.AnimatedDoubleSignal(channel1, channel2, speed) % Plot animated two signal symmetrically. (default speed is 2)
     viewer.AnimatedMultipleSignal(channelList, speed) % Plot all animated signal in channelList (must be even number, default speed is 2)
     ```
 
-8. Slider Double Singal Plot
+9.  Slider Double Singal Plot
 
     ```matlab
     viewer.SliderDoublePlot(channel1, channel2, secLength) % Show only the range of time period on screen
     ```
     Ps. It share the animatemaxlength global variable and same setting of Animated Plot function in AddAuxiliaryInformation for now.
 
-9. Slider Multiple Double Signal Plot
+10. Slider Multiple Double Signal Plot
 
     ```matlab
     viewer.SliderMultiplePlot(channelList, secLength) % Show only the range of time period on screen
