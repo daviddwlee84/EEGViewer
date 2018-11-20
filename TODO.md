@@ -2,8 +2,7 @@
 
 ## Recent
 
-- [X] Multiple Slider plot with slider
-- [ ] Add Auxiliary Information
+- [X] Add Auxiliary Information to multiple slider plot (and update)
 
 ## To-Do List
 
@@ -46,3 +45,4 @@
 - [X] Set minimum to not be 0 (cover the bottom)
 - [X] Open mutiple subplot and allocate position automatically
 - [X] Resize the figure automatically according to the number of subplot
+- [X] Multiple Slider plot with slider

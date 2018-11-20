@@ -388,7 +388,7 @@ classdef EEGViewer < handle
                     lastPlotBak(i).XData = x_beta(:, i-42);
                     lastPlotBak(i).YData = y_beta(:, i-42);
                 end
-                
+
             else % Double or Animated initialization
                 
                 if(~iscell(obj.channelLocationName))
@@ -409,7 +409,7 @@ classdef EEGViewer < handle
                 clm(end-7:end, 1) = 1;
                 colormap(clm)
                 
-                % Set background colot to black
+                % Set background color to black
                 set(gca,'Color','k')
 
                 if obj.mindrop > 0
@@ -484,6 +484,191 @@ classdef EEGViewer < handle
                 hold off
             end
   
+        end
+
+        % ======================================================================
+        %> @brief Add auxiliary information on subplots
+        %>        If obj.mindrop has set (~=0), shift to xy-plane.
+        %>        If obj.maxrange has set and greater than obj.fftdatamax, set max colormap as it.
+        %> 
+        %> @param obj instance of the EEGViewer class.
+        %> @param fig figure object
+        %> @param axs array of axis
+        %> @param surfaces array of surf object
+        %> @param type type of graph (DoubleSliderInit, DoubleSliderUpdate)
+        %> @param channels all channels in list (must be even number)
+        %> @param start_time start time of animate range
+        %> @param end_time current time of animate
+        %> @param lastSubplotBak all backuped subplot (to modify then plot)
+        %> @retval subplotBak return list of plot object list
+        % ======================================================================
+        function subplotBak = AddAuxiliaryInformationSubplot(obj, fig, axs, surfaces, type, channels, start_time, end_time, lastSubplotBak)
+            
+            if obj.mindrop > 0
+                shift = true; % shift minimum value to zero
+            else
+                shift = false;
+            end
+            
+            % Switch to specific figure
+            figure(fig);
+
+            % Set background color to black
+            fig.Color = 'k';
+
+            if strcmp(type, 'DoubleSliderInit')
+                % loop through every axises
+                for i=1:length(axs)
+                    % get current pairs channel number
+                    channel1 = channels(i*2-1);
+                    channel2 = channels(i*2);
+
+                    subplot(axs(i)); % Make Subplot the Current Axes
+
+                    %colorbar % show colorbar
+                    % Set colormap max color to RED
+                    colormap Jet
+                    clm = colormap;
+                    clm(end-7:end, 1) = 1;
+                    colormap(clm)
+
+                    if(~iscell(obj.channelLocationName))
+                        title(['Comparison of channel ', obj.channelNames(channel1, 1:3), ' and ', obj.channelNames(channel2, 1:3)]);
+                    else
+                        title(['Comparison of channel ', obj.channelNames(channel1, 1:3), '-', obj.channelLocationName{channel1},...
+                                               ' and ', obj.channelNames(channel2, 1:3), '-', obj.channelLocationName{channel2}]);
+                    end
+                    xlabel('f (Hz)');
+                    ylabel('t (sec)');
+                    zlabel('10\timeslog_{10}(|P1(f)|) (\muV^{2}/Hz)');
+                    
+                    surfaces(i).EdgeColor = 'none';
+    
+                    if obj.mindrop > 0
+                        shift = true; % shift minimum value to zero
+                    else
+                        shift = false;
+                    end
+    
+                    if ~shift
+                        if obj.mindrop == 0
+                            if obj.maxrange == inf
+                                lim = caxis;
+                                caxis([(lim(1)+lim(2))/2, obj.fftdatamax])
+                            else
+                                lim = caxis;
+                                caxis([(lim(1)+lim(2))/2, obj.maxrange])
+                            end
+                        else
+                            if obj.maxrange == inf
+                                caxis([obj.mindrop, obj.fftdatamax])
+                            else
+                                caxis([obj.mindrop, obj.maxrange])
+                            end
+                        end
+                    else
+                        if obj.maxrange == inf
+                            caxis([0, obj.fftdatamax - obj.mindrop])
+                        else
+                            caxis([0, obj.maxrange - obj.mindrop])
+                        end
+                    end
+    
+                    axis tight
+                    axs(i).View = [180, 65];         % set viewpoint
+                    
+                    grid on
+                    hold on
+
+                    time_range = start_time:end_time;
+                    
+                    %delta
+                    [x_delta, y_delta] = meshgrid(1:3, time_range);
+                    p1 = plot(x_delta, y_delta, 'b');
+                    plotBak = p1;
+                    [x_delta, y_delta] = meshgrid(-1:-1:-3, time_range);
+                    p2 = plot(x_delta, y_delta, 'b');
+                    plotBak = [plotBak; p2];
+                    %theta
+                    [x_theta, y_theta] = meshgrid(4:7, time_range);
+                    p3 = plot(x_theta, y_theta, 'g');
+                    plotBak = [plotBak; p3];
+                    [x_theta, y_theta] = meshgrid(-4:-1:-7, time_range);
+                    p4 = plot(x_theta, y_theta, 'g');
+                    plotBak = [plotBak; p4];
+                    %alpha
+                    [x_alpha, y_alpha] = meshgrid(8:12, time_range);
+                    p5 = plot(x_alpha, y_alpha, 'r');
+                    plotBak = [plotBak; p5];
+                    [x_alpha, y_alpha] = meshgrid(-8:-1:-12, time_range);
+                    p6 = plot(x_alpha, y_alpha, 'r');
+                    plotBak = [plotBak; p6];
+                    %beta
+                    [x_beta, y_beta] = meshgrid(13:30, time_range);
+                    p7 = plot(x_beta, y_beta, 'y');
+                    plotBak = [plotBak; p7];
+                    [x_beta, y_beta] = meshgrid(-13:-1:-30, time_range);
+                    p8 = plot(x_beta, y_beta, 'y');
+                    plotBak = [plotBak; p8];
+                    hold off
+
+                    subplotBak(i, :) = plotBak;
+                end
+            elseif strcmp(type, 'DoubleSliderUpdate')
+                for j=1:length(axs)
+
+                    update_time_range = start_time:end_time+1;
+                
+                    %delta
+                    for i = 1:3
+                        [x_delta, y_delta] = meshgrid(1:3, update_time_range);
+                        lastSubplotBak(j, i).XData = x_delta(:, i);
+                        lastSubplotBak(j, i).YData = y_delta(:, i);
+                    end
+                    for i = 4:6
+                        [x_delta, y_delta] = meshgrid(-1:-1:-3, update_time_range);
+                        lastSubplotBak(j, i).XData = x_delta(:, i-3);
+                        lastSubplotBak(j, i).YData = y_delta(:, i-3);
+                    end
+                    
+                    %theta
+                    for i = 7:10
+                        [x_theta, y_theta] = meshgrid(4:7, update_time_range);
+                        lastSubplotBak(j, i).XData = x_theta(:, i-6);
+                        lastSubplotBak(j, i).YData = y_theta(:, i-6);
+                    end
+                    for i = 11:14
+                        [x_theta, y_theta] = meshgrid(-4:-1:-7, update_time_range);
+                        lastSubplotBak(j, i).XData = x_theta(:, i-10);
+                        lastSubplotBak(j, i).YData = y_theta(:, i-10);
+                    end
+
+                    %alpha
+                    for i = 15:19
+                        [x_alpha, y_alpha] = meshgrid(8:12, update_time_range);
+                        lastSubplotBak(j, i).XData = x_alpha(:, i-14);
+                        lastSubplotBak(j, i).YData = y_alpha(:, i-14);
+                    end
+                    for i = 20:24
+                        [x_alpha, y_alpha] = meshgrid(-8:-1:-12, update_time_range);
+                        lastSubplotBak(j, i).XData = x_alpha(:, i-19);
+                        lastSubplotBak(j, i).YData = y_alpha(:, i-19);
+                    end
+                    
+                    %beta
+                    for i = 25:42
+                        [x_beta, y_beta] = meshgrid(13:30, update_time_range);
+                        lastSubplotBak(j, i).XData = x_beta(:, i-24);
+                        lastSubplotBak(j, i).YData = y_beta(:, i-24);
+                    end
+                    for i = 43:60
+                        [x_beta, y_beta] = meshgrid(-13:-1:-30, update_time_range);
+                        lastSubplotBak(j, i).XData = x_beta(:, i-42);
+                        lastSubplotBak(j, i).YData = y_beta(:, i-42);
+                    end
+                    
+                end
+            end
         end
         
         % ======================================================================
@@ -733,10 +918,12 @@ classdef EEGViewer < handle
             
             % Open subplot, initial surfaces
             for i = 1:pairs
-                ax(i) = subplot(total_rows, total_cols, i);
+                axs(i) = subplot(total_rows, total_cols, i);
                 surfaces(i) = surf(reshape(Xtemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]), reshape(Ytemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]), reshape(Ztemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]));
                 title(['subplot of ', int2str(i)])
             end
+            
+            subplotBak = obj.AddAuxiliaryInformationSubplot(fig, axs, surfaces, 'DoubleSliderInit', channels, 1, secLength);
 
             fig.Visible = 'on'; % Show the figure when all the elements are loaded
 
@@ -757,6 +944,7 @@ classdef EEGViewer < handle
                     surfaces(i).XData = reshape(Xtemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface x values
                     surfaces(i).YData = reshape(Ytemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface y values
                     surfaces(i).ZData = reshape(Ztemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface z values
+                    obj.AddAuxiliaryInformationSubplot(fig, axs, surfaces, 'DoubleSliderUpdate', channels, unitTimeLength*startTime, unitTimeLength*time, subplotBak);
                 end
             end
         end

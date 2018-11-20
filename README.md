@@ -4,7 +4,7 @@ Electroencephalography signal analysis and visualization
 
 ## Demo
 
-![SliderDoubleSignal](demo/SliderDoubleSignal.png) ![Animated](demo/Animated.gif) ![DoubleSignal](demo/DoubleSignal.png)
+![MultipleSlider](demo/MultipleSlider.png)
 
 ## Basic Usage
 
@@ -73,6 +73,12 @@ Electroencephalography signal analysis and visualization
     ```
     Ps. It share the animatemaxlength global variable and same setting of Animated Plot function in AddAuxiliaryInformation for now.
 
+9. Slider Multiple Double Signal Plot
+
+    ```matlab
+    viewer.SliderMultiplePlot(channelList, secLength) % Show only the range of time period on screen
+    ```
+
 * Quick view of data
 
     ```matlab
@@ -129,3 +135,9 @@ Open Source Matlab Toolbox for Brain-Computer Interface research
 ### Python EEG
 
 * [Pbrain repository](https://github.com/nipy/pbrain)
+
+## Previous Version Demo
+
+![SliderDoubleSignal](demo/SliderDoubleSignal.png)
+![Animated](demo/Animated.gif)
+![DoubleSignal](demo/DoubleSignal.png)

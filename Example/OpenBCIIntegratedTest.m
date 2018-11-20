@@ -28,4 +28,4 @@ viewer.AnimatedDoubleSignal(4, 5) % Default 2 time speed
 viewer.SliderDoublePlot(6, 7, 10) % Data range is 10 sec
 
 % Multiple Slider Double Signal
-viewer.SliderMultiplePlot([1, 2, 3, 4, 5, 6, 7, 8], 10)
+viewer.SliderMultiplePlot([1, 2, 3, 4, 5, 6, 7, 8], 10) % Data range is 10 sec
