@@ -2,7 +2,6 @@ classdef EEGViewer < handle
     %EEGViewer Electroencephalography signal analysis and visualization
     %   Detailed explanation goes here...
     
-    
     properties
         %> Data
         Data
@@ -49,7 +48,6 @@ classdef EEGViewer < handle
         %> Animate max length (ms)
         animatemaxlength
         
-        
     end
     
     methods
@@ -60,6 +58,12 @@ classdef EEGViewer < handle
         %> @return instance of the EEGViewer class.
         % ======================================================================
         function obj = EEGViewer(path)
+            
+            % Set the axis background color to black, the axis lines and labels to white,
+            % and the figure background color to dark gray.
+            % And then it need to set every figure to black that I add in AddAuxiliaryInformation() at once.
+            colordef black
+            
             % Add ./functions subpath to PATH
             addpath(genpath(fullfile(pwd, 'functions')))
             if nargin == 1
@@ -265,6 +269,9 @@ classdef EEGViewer < handle
             
             % Switch to specific figure
             figure(fig);
+
+            % Set background color to black
+            fig.Color = 'k';
             
             if strcmp(type, 'Single')
                 if(~iscell(obj.channelLocationName))
@@ -285,8 +292,8 @@ classdef EEGViewer < handle
                 clm(end-7:end, 1) = 1;
                 colormap(clm)
                 
-                % Set background colot to black
-                set(gca,'Color','k')
+                % Set background color to black
+                set(gca,'Color','k') % gca = get current axis
 
                 if ~shift
                     if obj.mindrop == 0
@@ -523,6 +530,7 @@ classdef EEGViewer < handle
             end
             
             fig = figure('Name', 'Plot Single Signal');
+
             surface = surf(Xq, Yq, Zq);
             
             obj.AddAuxiliaryInformation(fig, surface, 'Single', channel);
@@ -655,7 +663,6 @@ classdef EEGViewer < handle
                 else
                     startTime = time - dataPointLength;
                 end
-
                 surface.XData = Xq(startTime:time, :);    % replace surface x values
                 surface.YData = Yq(startTime:time, :);    % replace surface y values
                 surface.ZData = Zq(startTime:time, :);    % replace surface z values

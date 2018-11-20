@@ -2,6 +2,7 @@
 
 ## Recent
 
+- [X] Change background color to black
 - [ ] Set minimum to not be 0 (cover the bottom)
 
 ## To-Do List
