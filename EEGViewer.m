@@ -662,7 +662,7 @@ classdef EEGViewer < handle
                 % Fix the problem that starting point less than 1
                 if time <= dataPointLength
                     startTime = 1;
-                    time = dataPointLength;
+                    time = dataPointLength+1;
                 else
                     startTime = time - dataPointLength;
                 end
@@ -692,20 +692,72 @@ classdef EEGViewer < handle
             pairs = length(channels)/2;
             total_rows = max(floor(pairs/2), 1);
             total_cols = pairs/total_rows;
- 
-            fig = figure('Name', 'Multiple Double Signal with Slider');
+            graph_freq_length = length((obj.rng*10/2-299):(obj.rng*10/2+301));
+            graph_time_length = length(1:0.1:obj.totalsecond);
+            
+            % Preallocating
+            Xtemp = zeros(pairs, graph_time_length, graph_freq_length);
+            Ytemp = zeros(pairs, graph_time_length, graph_freq_length);
+            Ztemp = zeros(pairs, graph_time_length, graph_freq_length);
+            
+            % Store processed signal
+            for i = 1:pairs
+                [Xq, Yq, Zq] = obj.ProcessDoubleSignal(channels(i*2-1), channels(i*2));
+                Xtemp(i, :, :) = Xq;
+                Ytemp(i, :, :) = Yq;
+                Ztemp(i, :, :) = Zq;
+                if i == 1
+                    % get some variable
+                    interpolationLength = length(Xq(:, 1));
+                    unitTimeLength = obj.totalsecond/interpolationLength;
+                    dataPointLength = fix(secLength/unitTimeLength);
+                end
+            end
+            
+            fig = figure('Name', 'Multiple Double Signal with Slider', 'Visible', 'off');
             
             % resize the figure according to the subplot number
             width_height = fig.Position(3:4);
             width_height = width_height.*([total_cols, total_rows]);
             fig.Position(3:4) = width_height;
+
+            % slider
+            panel = uipanel(fig, 'Position', [0.01, 0.01, 0.4, 0.1]); % UI Panel
+            slider = uicontrol(panel, 'Style', 'slider', 'Position', [30, 30, 340, 23], ...
+                                'min', secLength, 'max', obj.totalsecond, 'Callback', @surfrange); % Slider bar
+            slider.Value = secLength;
+            slabel1 = uicontrol(panel, 'Style', 'text', 'Position', [10, 30, 23, 23], 'String', 0); % Left Label
+            slabel2 = uicontrol(panel, 'Style', 'text', 'Position', [380, 30, 23, 23], 'String', obj.totalsecond); % Right Label
+            slabel3 = uicontrol(panel, 'Style', 'text', 'Position', [100, 10, 200, 23], ...,
+                                'String', sprintf('Time Range: %5.2f ~ %5.2f (sec)', 0, secLength)); % Underside message
             
-            x = linspace(0,10);
+            % Open subplot, initial surfaces
             for i = 1:pairs
-                ax(i) = subplot(total_rows, total_cols, i)
-                y = i*sin(x);
-                plot(x, y)
+                ax(i) = subplot(total_rows, total_cols, i);
+                surfaces(i) = surf(reshape(Xtemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]), reshape(Ytemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]), reshape(Ztemp(i, 1:dataPointLength, :), [dataPointLength, graph_freq_length]));
                 title(['subplot of ', int2str(i)])
+            end
+
+            fig.Visible = 'on'; % Show the figure when all the elements are loaded
+
+            function surfrange(source, callbackdata)
+                val = source.Value;
+                slabel3.String = sprintf('Time Range: %5.2f ~ %5.2f (sec)', val-secLength, val);
+                time = fix(interpolationLength*val/obj.totalsecond);
+                dataPointLength = fix(secLength/unitTimeLength);
+
+                % Fix the problem that starting point less than 1
+                if time <= dataPointLength
+                    startTime = 1;
+                    time = dataPointLength+1;
+                else
+                    startTime = time - dataPointLength;
+                end
+                for i = 1:pairs
+                    surfaces(i).XData = reshape(Xtemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface x values
+                    surfaces(i).YData = reshape(Ytemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface y values
+                    surfaces(i).ZData = reshape(Ztemp(i, startTime:time, :), [dataPointLength+1, graph_freq_length]);    % replace surface z values
+                end
             end
         end
 
