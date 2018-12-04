@@ -2,7 +2,7 @@
 
 ## Recent
 
-- [X] Compress graph down
+- [X] Saved fft data in csv format
 
 ## To-Do List
 
@@ -49,3 +49,4 @@
 - [X] Resize the figure automatically according to the number of subplot
 - [X] Multiple Slider plot with slider
 - [X] Add Auxiliary Information to multiple slider plot (and update)
+- [X] Compress graph down

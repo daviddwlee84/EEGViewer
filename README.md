@@ -99,6 +99,14 @@ Electroencephalography signal analysis and visualization
     viewer.SetChannelLocationName('ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8')
     ```
 
+* Save FFT data as CSV
+
+    This will auto append .csv extension after filename.
+
+    ```matlab
+    viewer.SaveCSV('filename')
+    ```
+
 ## Other function used
 
 * readOpenBCItxt.m - load *.txt output from OpenBCI's machine

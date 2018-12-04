@@ -236,11 +236,120 @@ classdef EEGViewer < handle
         %> @param obj instance of the EEGViewer class.
         % ======================================================================
         function fftTransform(obj)
-       
+
             obj.fftData = obj.DataProcess();
-            
+
             obj.fftdatamax = max(max(max(obj.fftData))); % Default maximum value
 
+        end
+
+        % ======================================================================
+        %> @brief Saved FFT Transform as CSV
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param filename file name without extension. (will auto append .csv)
+        % ======================================================================
+        function SaveCSV(obj, filename)
+            if obj.numchannels > 8
+                numchannels = 8;
+            else
+                numchannels = obj.numchannels;
+            end
+
+            obj.fftTransform();
+
+            %% For column name =========================================
+            columnNamesCell = cell(1, numchannels * 30 + numchannels * 4);
+            for channel = 1:numchannels
+                % Get channel name
+                if(~iscell(obj.channelLocationName))
+                    channelName = obj.channelNames(channel, 1:3);
+                else
+                    channelName = obj.channelLocationName{channel};
+                end
+                for hz = 1:30
+                    columnNamesCell{(channel-1)*30 + hz} = [channelName, '_', int2str(hz), 'Hz'];
+                end
+                for avgHz = 1:4
+                    switch avgHz
+                        case 1
+                            columnNamesCell{numchannels*30 + (channel-1)*4 + 1} = [channelName, 'D'];
+                        case 2
+                            columnNamesCell{numchannels*30 + (channel-1)*4 + 2} = [channelName, 'T'];
+                        case 3
+                            columnNamesCell{numchannels*30 + (channel-1)*4 + 3} = [channelName, 'A'];
+                        case 4
+                            columnNamesCell{numchannels*30 + (channel-1)*4 + 4} = [channelName, 'B'];
+                    end
+                end
+            end
+
+            %% For data =========================================
+            % Regular
+            outputData = zeros(obj.totalsecond, numchannels * 34);
+            for channel = 1:numchannels
+                for time = 1:obj.totalsecond
+                    Delta = 0;
+                    Theta = 0;
+                    Alpha = 0;
+                    Gamma = 0;
+                    for hz = 1:30 % 1 is 0 Hz
+                        currentValue = obj.fftData(channel, time, hz+1);
+                        outputData(time, (channel-1)*30 + hz) = currentValue;
+                        if hz < 4
+                            Delta = Delta + currentValue;
+                        elseif hz < 8
+                            Theta = Theta + currentValue;
+                        elseif hz < 13
+                            Alpha = Alpha + currentValue;
+                        else % hz = 13~30
+                            Gamma = Gamma + currentValue;
+                        end
+                    end
+                    % Average delta theta alpha gamma
+                    if Delta == 0
+                        avgDelta = 0;
+                    else
+                        avgDelta = Delta/3;
+                    end
+                    outputData(time, numchannels*30 + (channel-1)*4 + 1) = avgDelta;
+                    if Theta == 0
+                        avgTheta = 0;
+                    else
+                        avgTheta = Theta/3;
+                    end
+                    outputData(time, numchannels*30 + (channel-1)*4 + 2) = avgTheta/4;
+                    if Alpha == 0
+                        avgAlpha = 0;
+                    else
+                        avgAlpha = Alpha/3;
+                    end
+                    outputData(time, numchannels*30 + (channel-1)*4 + 3) = avgAlpha/5;
+                    if Gamma == 0
+                        avgGamma = 0;
+                    else
+                        avgGamma = Delta/3;
+                    end
+                    outputData(time, numchannels*30 + (channel-1)*4 + 4) = avgGamma/18;
+                end
+            end
+
+            % Can't access Excel on Mac
+            % status = xlswrite(filename, outputDataCell)
+            % if status
+            %     ['Successfully saved ', filename]
+            % else
+            %     error(['Faild to save ', filename])
+            % end
+
+            % construct header
+            % (csvwrite doesn't support string or cell like xlswrite)
+            textHeader = strjoin(columnNamesCell, ',');
+            fid = fopen([filename, '.csv'], 'w'); 
+            fprintf(fid, '%s\n', textHeader);
+            fclose(fid);
+            % write data to end of file
+            dlmwrite([filename, '.csv'], outputData, '-append');
         end
         
         % ======================================================================
