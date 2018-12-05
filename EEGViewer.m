@@ -1,6 +1,7 @@
 classdef EEGViewer < handle
     %EEGViewer Electroencephalography signal analysis and visualization
-    %   Detailed explanation goes here...
+    %   Author: David D.W.Lee
+    %   Github: https://github.com/daviddwlee84/EEGViewer
     
     properties
         %> Data

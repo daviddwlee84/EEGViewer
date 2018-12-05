@@ -2,6 +2,8 @@
 
 Electroencephalography signal analysis and visualization
 
+This toolbox has been used in course "[Design and Practice of Neuromarketing Experiment](http://info.ntust.edu.tw/faith/edua/app/qry_linkoutline.aspx?semester=1071&courseno=BA6399701) (腦科學行銷實驗設計與實作)" in NTUST (Taiwan Tech).
+
 ## Demo
 
 ![MultipleSlider](demo/MultipleSlider.png)
