@@ -44,6 +44,7 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
     ```matlab
     viewer.SetMinDrop(minimum) % Default is 0 (don't drop)
     ```
+
     ```matlab
     viewer.SetMaxRange(maximum) % Default is the maximum of all channel's FFT data
     ```
@@ -81,6 +82,7 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
     ```matlab
     viewer.SliderDoublePlot(channel1, channel2, secLength) % Show only the range of time period on screen
     ```
+
     Ps. It share the animatemaxlength global variable and same setting of Animated Plot function in AddAuxiliaryInformation for now.
 
 10. Slider Multiple Double Signal Plot
@@ -103,11 +105,13 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
 
 * Save FFT data as CSV
 
-    This will auto append .csv extension after filename.
+    This will output 1~60Hz fft data and sum of delta, theta, alpha, beta, gamma.
 
     ```matlab
     viewer.SaveCSV('filename')
     ```
+
+    Ps. It will auto append .csv extension after filename.
 
 ## Other function used
 

@@ -259,28 +259,33 @@ classdef EEGViewer < handle
 
             obj.fftTransform();
 
+            MAX_HZ = 60
+
             %% For column name =========================================
-            columnNamesCell = cell(1, numchannels * 30 + numchannels * 4);
+            columnNamesCell = cell(1, numchannels * MAX_HZ + numchannels * 4);
             for channel = 1:numchannels
                 % Get channel name
                 if(~iscell(obj.channelLocationName))
                     channelName = obj.channelNames(channel, 1:3);
+                    channelName = channelName(find(~isspace(channelName))); % Remove white space
                 else
                     channelName = obj.channelLocationName{channel};
                 end
-                for hz = 1:30
-                    columnNamesCell{(channel-1)*30 + hz} = [channelName, '_', int2str(hz), 'Hz'];
+                for hz = 1:60
+                    columnNamesCell{(channel-1)*MAX_HZ + hz} = [channelName, '_', int2str(hz), 'Hz'];
                 end
-                for avgHz = 1:4
-                    switch avgHz
-                        case 1
-                            columnNamesCell{numchannels*30 + (channel-1)*4 + 1} = [channelName, 'D'];
-                        case 2
-                            columnNamesCell{numchannels*30 + (channel-1)*4 + 2} = [channelName, 'T'];
-                        case 3
-                            columnNamesCell{numchannels*30 + (channel-1)*4 + 3} = [channelName, 'A'];
-                        case 4
-                            columnNamesCell{numchannels*30 + (channel-1)*4 + 4} = [channelName, 'B'];
+                for sumHz = 1:5
+                    switch sumHz
+                        case 1 % delta
+                            columnNamesCell{numchannels*MAX_HZ + (channel-1)*5 + 1} = [channelName, 'D'];
+                        case 2 % theta
+                            columnNamesCell{numchannels*MAX_HZ + (channel-1)*5 + 2} = [channelName, 'T'];
+                        case 3 % alpha
+                            columnNamesCell{numchannels*MAX_HZ + (channel-1)*5 + 3} = [channelName, 'A'];
+                        case 4 % beta
+                            columnNamesCell{numchannels*MAX_HZ + (channel-1)*5 + 4} = [channelName, 'B'];
+                        case 5 % gamma
+                            columnNamesCell{numchannels*MAX_HZ + (channel-1)*5 + 5} = [channelName, 'G'];
                     end
                 end
             end
@@ -293,45 +298,61 @@ classdef EEGViewer < handle
                     Delta = 0;
                     Theta = 0;
                     Alpha = 0;
+                    Beta  = 0;
                     Gamma = 0;
-                    for hz = 1:30 % 1 is 0 Hz
+                    for hz = 1:MAX_HZ % 1 is 0 Hz
                         currentValue = obj.fftData(channel, time, hz+1);
-                        outputData(time, (channel-1)*30 + hz) = currentValue;
+                        outputData(time, (channel-1)*MAX_HZ + hz) = currentValue;
                         if hz < 4
                             Delta = Delta + currentValue;
                         elseif hz < 8
                             Theta = Theta + currentValue;
                         elseif hz < 13
                             Alpha = Alpha + currentValue;
-                        else % hz = 13~30
+                        elseif hz < 31
+                            Beta = Beta + currentValue;
+                        else % hz = 31~60
                             Gamma = Gamma + currentValue;
                         end
                     end
-                    % Average delta theta alpha gamma
-                    if Delta == 0
-                        avgDelta = 0;
-                    else
-                        avgDelta = Delta/3;
-                    end
-                    outputData(time, numchannels*30 + (channel-1)*4 + 1) = avgDelta;
-                    if Theta == 0
-                        avgTheta = 0;
-                    else
-                        avgTheta = Theta/3;
-                    end
-                    outputData(time, numchannels*30 + (channel-1)*4 + 2) = avgTheta/4;
-                    if Alpha == 0
-                        avgAlpha = 0;
-                    else
-                        avgAlpha = Alpha/3;
-                    end
-                    outputData(time, numchannels*30 + (channel-1)*4 + 3) = avgAlpha/5;
-                    if Gamma == 0
-                        avgGamma = 0;
-                    else
-                        avgGamma = Delta/3;
-                    end
-                    outputData(time, numchannels*30 + (channel-1)*4 + 4) = avgGamma/18;
+                    %% Average delta theta alpha beta gamma
+                    % if Delta == 0
+                    %     avgDelta = 0;
+                    % else
+                    %     avgDelta = Delta/3;
+                    % end
+                    % outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 1) = avgDelta;
+                    %% Sum delta theta alpha beta gamma
+                    outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 1) = Delta;
+
+                    % if Theta == 0
+                    %     avgTheta = 0;
+                    % else
+                    %     avgTheta = Theta/3;
+                    % end
+                    % outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 2) = avgTheta/4;
+                    outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 2) = Theta;
+                    % if Alpha == 0
+                    %     avgAlpha = 0;
+                    % else
+                    %     avgAlpha = Alpha/3;
+                    % end
+                    % outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 3) = avgAlpha/5;
+                    outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 3) = Alpha;
+                    % if Beta == 0
+                    %     avgBeta = 0;
+                    % else
+                    %     avgBeta = Beta/3;
+                    % end
+                    % outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 4) = avgBeta/18;
+                    outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 4) = Beta;
+                    % if Gamma == 0
+                    %     avgGamma = 0;
+                    % else
+                    %     avgGamma = Gamma/3;
+                    % end
+                    % outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 5) = avgGamma/18; 
+                    outputData(time, numchannels*MAX_HZ + (channel-1)*5 + 5) = Gamma;
                 end
             end
 
