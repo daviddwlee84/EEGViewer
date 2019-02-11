@@ -259,7 +259,7 @@ classdef EEGViewer < handle
 
             obj.fftTransform();
 
-            MAX_HZ = 60
+            MAX_HZ = 60;
 
             %% For column name =========================================
             columnNamesCell = cell(1, numchannels * MAX_HZ + numchannels * 4);
@@ -374,6 +374,80 @@ classdef EEGViewer < handle
             dlmwrite([filename, '.csv'], outputData, '-append');
         end
         
+        % ======================================================================
+        %> @brief Calculate statistics result and save to CSV
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param filename file name without extension. (will auto append .csv)
+        %> @param LRChannel 2D Matrix of [left channel nums, right channel nums]
+        % ======================================================================
+        function Statistics(obj, filename, LRChannel)
+
+            numchannels = 8;
+
+            obj.fftTransform();
+
+            %leftChannel = LRChannel(1, :);
+            %rightChannel = LRChannel(2, :);
+            
+            %% Right Frontal Cortical Asymmetry
+            leftChannelNameSum = cell(1, 4); % left channel names to build sum formula e.g. A+B+C+D
+            rightChannelNameSum = cell(1, 4);
+            leftChannelAvgSum = 0;
+            rightChannelAvgSum = 0;
+            for num = 1:numchannels
+                channel = LRChannel(num);
+                % Get channel name
+                if(~iscell(obj.channelLocationName))
+                    channelName = obj.channelNames(channel, 1:3);
+                    channelName = channelName(find(~isspace(channelName))); % Remove white space
+                else
+                    channelName = obj.channelLocationName{channel};
+                end
+
+                sumForSingleChannel = 0;
+                for time = 1:obj.totalsecond
+                    for hz = 8:12 % 1 is 0 Hz, ONLY ALPHA WAVE
+                        currentValue = obj.fftData(channel, time, hz+1);
+                        sumForSingleChannel = sumForSingleChannel + currentValue;
+                    end
+                end
+                avgForSingleChannel = sumForSingleChannel / obj.totalsecond / (12-8+1);
+
+                if mod(channel, 2) == 1 % odd index in LRChannel is left
+                    idx = floor(channel/2 + 1);
+                    leftChannelNameSum{idx} = channelName;
+
+                    leftChannelAvgSum = leftChannelAvgSum + avgForSingleChannel;
+                else % even index in LRChannel is right
+                    idx = floor(channel/2);
+                    rightChannelNameSum{idx} = channelName;
+
+                    rightChannelAvgSum = rightChannelAvgSum + avgForSingleChannel;
+                end
+            end
+
+            Right_Frontal_Cortical_Asymmetry = log10(rightChannelAvgSum/4) - log10(leftChannelAvgSum/4);
+            Right_Frontal_Cortical_Asymmetry_Formula = ['log[mean(', strjoin(rightChannelNameSum, '+'), ')] - log[mean(', strjoin(leftChannelNameSum, '+'), ')]'];
+            %%
+
+            %% Frontal Brain Asymmetry
+            Frontal_Brain_Asymmetry = 87
+            Frontal_Brain_Asymmetry_Formula = NaN
+            %%
+
+            Name = {'Right Frontal Cortical Asymmetry (alpha)'; 'Frontal Brain Asymmetry'; 'EEG Alpha Synchronization';...
+                    'Posterior Resting State EEG Asymmetries'; 'AW Index'};
+
+            Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; 76; 65; 54];
+
+            Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; NaN; NaN; NaN};
+
+            Result = table(Name, Value, Formula) % Output Table
+
+            writetable(Result, [filename, '.csv']);
+        end
+
         % ======================================================================
         %> @brief Set minimum drop value (Optional)
         %>

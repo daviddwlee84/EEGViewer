@@ -108,10 +108,22 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
     This will output 1~60Hz fft data and sum of delta, theta, alpha, beta, gamma.
 
     ```matlab
-    viewer.SaveCSV('filename')
+    viewer.SaveCSV('filename') % It will auto append .csv extension after filename.
     ```
 
-    Ps. It will auto append .csv extension after filename.
+* Statistics CSV
+
+    Output the following statistics with its value and formula
+
+    * Right frontal cortical asymmetry (alpha)
+    * Frontal brain asymmetry
+    * EEG alpha synchronization
+    * Posterior resting state EEG asymmetries
+    * Approach-Withdrawal (AW) Index
+
+    ```matlab
+    viewer.Statistics('filename', [1, 2, 3, 4; 5, 6, 7, 8]) % [left channel nums; right channel nums]
+    ```
 
 ## Other function used
 

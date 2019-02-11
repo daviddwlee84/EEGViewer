@@ -2,8 +2,13 @@
 
 ## Recent
 
-- [X] Expand to 60Hz (gamma)
-- [X] Calculate average -> summary
+- [ ] Statistics
+  - [X] Right frontal cortical asymmetry
+  - [ ] Frontal brain asymmetry
+  - [ ] EEG alpha synchronization
+  - [ ] Posterior resting state EEG asymmetries
+  - [ ] Approach-Withdrawal (AW) Index
+- [ ] Split 1 second into 1/5 second
 
 ## To-Do List
 
@@ -52,3 +57,5 @@
 - [X] Add Auxiliary Information to multiple slider plot (and update)
 - [X] Compress graph down
 - [X] Saved fft data in csv format
+- [X] Expand to 60Hz (gamma)
+- [X] Calculate average -> summary
