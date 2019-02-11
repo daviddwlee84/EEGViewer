@@ -4,7 +4,7 @@
 
 - [ ] Statistics
   - [X] Right frontal cortical asymmetry
-  - [ ] Frontal brain asymmetry
+  - [X] Frontal brain asymmetry
   - [ ] EEG alpha synchronization
   - [ ] Posterior resting state EEG asymmetries
   - [ ] Approach-Withdrawal (AW) Index

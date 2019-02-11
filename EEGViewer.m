@@ -432,8 +432,50 @@ classdef EEGViewer < handle
             %%
 
             %% Frontal Brain Asymmetry
-            Frontal_Brain_Asymmetry = 87
-            Frontal_Brain_Asymmetry_Formula = NaN
+            MAX_HZ = 60;
+
+            leftChannelNameSum = cell(1, 4); % left channel names to build sum formula e.g. A+B+C+D
+            rightChannelNameSum = cell(1, 4);
+            leftChannelAvgSum = 0;
+            rightChannelAvgSum = 0;
+            for num = 1:numchannels
+                channel = LRChannel(num);
+                % Get channel name
+                if(~iscell(obj.channelLocationName))
+                    channelName = obj.channelNames(channel, 1:3);
+                    channelName = channelName(find(~isspace(channelName))); % Remove white space
+                else
+                    channelName = obj.channelLocationName{channel};
+                end
+
+                sumForSingleChannel = 0;
+                for time = 1:obj.totalsecond
+                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                        currentValue = obj.fftData(channel, time, hz+1);
+                        sumForSingleChannel = sumForSingleChannel + currentValue;
+                    end
+                end
+                avgForSingleChannel = sumForSingleChannel / obj.totalsecond / MAX_HZ;
+
+                if mod(channel, 2) == 1 % odd index in LRChannel is left
+                    idx = floor(channel/2 + 1);
+                    leftChannelNameSum{idx} = channelName;
+
+                    leftChannelAvgSum = leftChannelAvgSum + avgForSingleChannel;
+                else % even index in LRChannel is right
+                    idx = floor(channel/2);
+                    rightChannelNameSum{idx} = channelName;
+
+                    rightChannelAvgSum = rightChannelAvgSum + avgForSingleChannel;
+                end
+            end
+
+            % I'll use the original formula here
+            % Laterality Coefficients (LC) = [(left - right)/(left + right)] * 100
+            LC = ((leftChannelAvgSum-rightChannelAvgSum) / (leftChannelAvgSum+rightChannelAvgSum)) * 100
+
+            Frontal_Brain_Asymmetry = LC
+            Frontal_Brain_Asymmetry_Formula = ['[(mean(', strjoin(leftChannelNameSum, '+'), ') - mean(', strjoin(rightChannelNameSum, '+') ,')) / ', '(mean(', strjoin(leftChannelNameSum, '+'), ') + mean(', strjoin(rightChannelNameSum, '+') ,'))] * 100'];
             %%
 
             Name = {'Right Frontal Cortical Asymmetry (alpha)'; 'Frontal Brain Asymmetry'; 'EEG Alpha Synchronization';...
