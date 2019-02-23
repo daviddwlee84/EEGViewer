@@ -387,8 +387,8 @@ classdef EEGViewer < handle
 
             obj.fftTransform();
 
-            %leftChannel = LRChannel(1, :);
-            %rightChannel = LRChannel(2, :);
+            leftChannel = LRChannel(1, :);
+            rightChannel = LRChannel(2, :);
             
             %% Right Frontal Cortical Asymmetry
             leftChannelNameSum = cell(1, 4); % left channel names to build sum formula e.g. A+B+C+D
@@ -429,7 +429,7 @@ classdef EEGViewer < handle
 
             Right_Frontal_Cortical_Asymmetry = log10(rightChannelAvgSum/4) - log10(leftChannelAvgSum/4);
             Right_Frontal_Cortical_Asymmetry_Formula = ['log[mean(', strjoin(rightChannelNameSum, '+'), ')] - log[mean(', strjoin(leftChannelNameSum, '+'), ')]'];
-            %%
+
 
             %% Frontal Brain Asymmetry
             MAX_HZ = 60;
@@ -472,18 +472,75 @@ classdef EEGViewer < handle
 
             % I'll use the original formula here
             % Laterality Coefficients (LC) = [(left - right)/(left + right)] * 100
-            LC = ((leftChannelAvgSum-rightChannelAvgSum) / (leftChannelAvgSum+rightChannelAvgSum)) * 100
+            LC = ((leftChannelAvgSum-rightChannelAvgSum) / (leftChannelAvgSum+rightChannelAvgSum)) * 100;
 
-            Frontal_Brain_Asymmetry = LC
+            Frontal_Brain_Asymmetry = LC;
             Frontal_Brain_Asymmetry_Formula = ['[(mean(', strjoin(leftChannelNameSum, '+'), ') - mean(', strjoin(rightChannelNameSum, '+') ,')) / ', '(mean(', strjoin(leftChannelNameSum, '+'), ') + mean(', strjoin(rightChannelNameSum, '+') ,'))] * 100'];
-            %%
 
+
+            %% EEG Alpha Synchronization (TODO)
+            % Task Related Power
+            % TRP(i) = log(Chi, activation) - log(Chi, reference)
+            TRPi = NaN;
+            EEG_Alpha_Synchronization = NaN;
+            EEG_Alpha_Synchronization_Formula = 'TRP(i) = log(Channel i, activation) - log(Channel i, reference)';
+
+            
+            %% Posterior Resting State EEG Asymmetries (TODO)
+
+
+            %% AW Index
+            % Cardinality of channel
+            Np = length(rightChannel);
+            Nq = length(leftChannel);
+
+            % Alpha band that have been recorded from the right and left frontal lobes
+            Xalpha = [];
+            for rightIdx = 1:Np
+                channel = rightChannel(rightIdx);
+                sumForSingleChannel = 0;
+                for time = 1:obj.totalsecond
+                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                        currentValue = obj.fftData(channel, time, hz+1);
+                        sumForSingleChannel = sumForSingleChannel + currentValue;
+                    end
+                end
+                avgForSingleChannel = sumForSingleChannel / obj.totalsecond / MAX_HZ;
+                Xalpha = [Xalpha, avgForSingleChannel];
+            end
+            
+            Yalpha = [];
+            for leftIdx = 1:Nq
+                channel = leftChannel(leftIdx);
+                sumForSingleChannel = 0;
+                for time = 1:obj.totalsecond
+                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                        currentValue = obj.fftData(channel, time, hz+1);
+                        sumForSingleChannel = sumForSingleChannel + currentValue;
+                    end
+                end
+                avgForSingleChannel = sumForSingleChannel / obj.totalsecond / MAX_HZ;
+                Yalpha = [Yalpha, avgForSingleChannel];
+            end
+
+            AW_Index = 1/Np*sumsqr(Xalpha) - 1/Nq*sumsqr(Yalpha);
+            
+            leftChannelNameSumSquare = cell(1, 4);
+            rightChannelNameSumSquare = cell(1, 4);
+            for idx = 1:4
+                leftChannelNameSumSquare{idx} = [leftChannelNameSum{idx}, '^2'];
+                rightChannelNameSumSquare{idx} = [rightChannelNameSum{idx}, '^2'];
+            end
+            AW_Index_Formula = ['1/Np * (', strjoin(rightChannelNameSumSquare, ' + '), ') - 1/Nq * (', strjoin(leftChannelNameSumSquare, ' + '), ')'];
+
+
+            %% Combine results
             Name = {'Right Frontal Cortical Asymmetry (alpha)'; 'Frontal Brain Asymmetry'; 'EEG Alpha Synchronization';...
                     'Posterior Resting State EEG Asymmetries'; 'AW Index'};
 
-            Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; 76; 65; 54];
+            Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; EEG_Alpha_Synchronization; NaN; AW_Index];
 
-            Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; NaN; NaN; NaN};
+            Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; EEG_Alpha_Synchronization_Formula; NaN; AW_Index_Formula};
 
             Result = table(Name, Value, Formula) % Output Table
 

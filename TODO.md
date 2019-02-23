@@ -7,7 +7,7 @@
   - [X] Frontal brain asymmetry
   - [ ] EEG alpha synchronization
   - [ ] Posterior resting state EEG asymmetries
-  - [ ] Approach-Withdrawal (AW) Index
+  - [X] Approach-Withdrawal (AW) Index
 - [ ] Split 1 second into 1/5 second
 
 ## To-Do List
