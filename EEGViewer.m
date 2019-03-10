@@ -548,6 +548,47 @@ classdef EEGViewer < handle
         end
 
         % ======================================================================
+        %> @brief Calculate the absolute value of differential and find the top N timing
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param N for top-N sort
+        % ======================================================================
+        function DifferentialTopN(obj, N)
+            if obj.numchannels > 8
+                numchannels = 8;
+            else
+                numchannels = obj.numchannels;
+            end
+            obj.fftTransform();
+            
+            channel_topN_time = cell(numchannels);
+            channel_topN_sumValue = cell(numchannels);
+
+            for channel = 1:numchannels
+                % Get channel name
+                if(~iscell(obj.channelLocationName))
+                    channelName = obj.channelNames(channel, 1:3);
+                    channelName = channelName(find(~isspace(channelName))); % Remove white space
+                else
+                    channelName = obj.channelLocationName{channel};
+                end
+                reshaped_channel_data = reshape(obj.fftData(channel, :, :), obj.totalsecond, [])'; % size(freq, totalsecond)
+                % replace Inf value with max and -Inf with min
+                reshaped_channel_data(reshaped_channel_data==inf) = max(reshaped_channel_data(isfinite(reshaped_channel_data)));
+                reshaped_channel_data(reshaped_channel_data==-inf) = min(reshaped_channel_data(isfinite(reshaped_channel_data)));
+                mean_of_channel = mean(reshaped_channel_data);
+                channel_abs_diff = abs(diff(mean_of_channel));
+                [B, I] = sort(channel_abs_diff, 'descend');
+                channel_topN_time{channel} = I(1:N);
+                channel_topN_sumValue{channel} = mean_of_channel(I(1:N)+1); % get top N of original value
+                disp([channelName, ' top-', num2str(N), ' is about at time (sec):'])
+                disp(channel_topN_time{channel})
+                disp(['and with mean of values'])
+                disp(channel_topN_sumValue{channel})
+            end
+        end
+
+        % ======================================================================
         %> @brief Set minimum drop value (Optional)
         %>
         %> @param obj instance of the EEGViewer class.

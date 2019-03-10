@@ -125,6 +125,14 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
     viewer.Statistics('filename', [1, 2, 3, 4; 5, 6, 7, 8]) % [left channel nums; right channel nums]
     ```
 
+* Top-N Differential
+
+    Print the top-N absolute value of differential for each channel
+
+    ```matlab
+    viewer.DifferentialTopN(N)
+    ```
+
 ## Other function used
 
 * readOpenBCItxt.m - load *.txt output from OpenBCI's machine
