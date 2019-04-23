@@ -97,6 +97,43 @@ fig.parameter = new_value
     * fix to strip all the decimals - `fix  (1.9) % 1`
     * round can change the integer part - `round(1.9) % 2`
 
+## CSV Related
+
+* [csvread (Not Recommend)](https://www.mathworks.com/help/matlab/ref/csvread.html)
+* [csvwrite (Not Recommend)](https://www.mathworks.com/help/matlab/ref/csvwrite.html)
+* [readmatrix](https://www.mathworks.com/help/matlab/ref/readmatrix.html)
+* [writematrix](https://www.mathworks.com/help/matlab/ref/writematrix.html)
+* writecell
+* writetimetable
+
+### Write a CSV with column name
+
+#### Use open file and strjoin
+
+```matlab
+textHeader = strjoin(columnNamesCell, ',');
+fid = fopen([filename, '.csv'], 'w');
+fprintf(fid, '%s\n', textHeader);
+fclose(fid);
+% write data to end of file
+dlmwrite([filename, '.csv'], outputData, '-append');
+```
+
+#### Use table and writetable
+
+```matlab
+Name = {'Right Frontal Cortical Asymmetry (alpha)'; 'Frontal Brain Asymmetry'; 'EEG Alpha Synchronization';...
+        'Posterior Resting State EEG Asymmetries'; 'AW Index'; 'Frontal Alpha Asymmetry'};
+
+Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; EEG_Alpha_Synchronization; NaN; AW_Index; Frontal_Alpha_Asymmetry];
+
+Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; EEG_Alpha_Synchronization_Formula; NaN; AW_Index_Formula; Frontal_Alpha_Asymmetry_Formula};
+
+Result = table(Name, Value, Formula) % Output Table
+
+writetable(Result, [filename, '.csv']);
+```
+
 ## Links
 
 ### EEG with Matlab

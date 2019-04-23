@@ -113,16 +113,21 @@ This toolbox has been used in course "[Design and Practice of Neuromarketing Exp
 
 * Statistics CSV
 
-    Output the following statistics with its value and formula
+    Output the following statistics with its value and formula (as `filename_stat.csv`)
 
     * Right frontal cortical asymmetry (alpha)
     * Frontal brain asymmetry
     * EEG alpha synchronization
     * Posterior resting state EEG asymmetries
     * Approach-Withdrawal (AW) Index
+    * Frontal Alpha Asymmetry
+
+    And GFP_theta table (as `filename_gfp.csv`)
 
     ```matlab
-    viewer.Statistics('filename', [1, 2, 3, 4; 5, 6, 7, 8]) % [left channel nums; right channel nums]
+    % [left channel nums; right channel nums]
+    viewer.Statistics('filename', [1, 2, 3, 4; 5, 6, 7, 8]) % With only LRChannels
+    viewer.Statistics('filename', [1, 2, 3, 4; 5, 6, 7, 8], [1, 2, 3; 5, 6, 7]) % With LRChannels and GFPLRChannels
     ```
 
 * Top-N Differential

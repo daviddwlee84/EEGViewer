@@ -8,8 +8,9 @@
   - [ ] EEG alpha synchronization
   - [ ] Posterior resting state EEG asymmetries
   - [X] Approach-Withdrawal (AW) Index
-  - [ ] Global field power (GFP) for Frontal Theta (single table)
-  - [ ] Frontal alpha asymmetry (based on GFP)
+  - [X] Global field power (GFP) for Frontal Theta (single table)
+    - [[Eeglablist] get global field power of ERP data](https://sccn.ucsd.edu/pipermail/eeglablist/2008/002132.html)
+  - [X] Frontal alpha asymmetry (based on GFP)
 - [ ] Split 1 second into 1/5 second
 - [X] Differential and Sorting
 
