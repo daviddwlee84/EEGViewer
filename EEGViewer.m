@@ -307,7 +307,7 @@ classdef EEGViewer < handle
                             Delta = Delta + currentValue;
                         elseif hz < 8
                             Theta = Theta + currentValue;
-                        elseif hz < 13
+                        elseif hz < 14
                             Alpha = Alpha + currentValue;
                         elseif hz < 31
                             Beta = Beta + currentValue;
@@ -375,13 +375,89 @@ classdef EEGViewer < handle
         end
         
         % ======================================================================
+        %> @brief Calculate global field power and Frontal Alpha Asymmetry then output csv table
+        %>
+        %> @param obj instance of the EEGViewer class.
+        %> @param filename file name without extension. (will auto append .csv)
+        %> @param GFPLRChannel 2D Matrix of [left channel nums, right channel nums] for GFP
+        % ======================================================================
+        function frontal_alpha_asymmetry = GlobalFieldPower(obj, filename, GFPLRChannel)
+            obj.fftTransform();
+            raw_data = obj.fftData;
+            raw_data(raw_data==inf) = max(raw_data(isfinite(raw_data)));
+            raw_data(raw_data==-inf) = min(raw_data(isfinite(raw_data)));
+            % gfp = std(mean(raw_data, 3))
+            
+            numchannels = numel(GFPLRChannel); % Number of array elements
+            assert(numchannels/2 == floor(numchannels/2)) % must be 2*n
+
+            columnNamesCell = cell(1, numchannels);
+
+            N = obj.totalsecond;
+            gfp_theta = zeros(N, numchannels);
+            gfp_alpha_left = 0;
+            gfp_alpha_right = 0;
+            for num = 1:numchannels
+                channel = GFPLRChannel(num);
+                % Get channel name
+                if(~iscell(obj.channelLocationName))
+                    channelName = obj.channelNames(channel, 1:3);
+                    channelName = channelName(find(~isspace(channelName))); % Remove white space
+                else
+                    channelName = obj.channelLocationName{channel};
+                end
+                columnNamesCell{num} = channelName;
+
+                x_theta_square = zeros(1, N);
+                x_alpha_square = zeros(1, N);
+                for time = 1:obj.totalsecond
+
+                    theta_sum_t = 0;
+                    for hz = 4:7 % 1 is 0 Hz, ONLY THETA WAVE => for GFP_theta
+                        currentValue = raw_data(channel, time, hz+1);
+                        theta_sum_t = theta_sum_t + currentValue;
+                    end
+                    x_theta_square(time) = theta_sum_t^2;
+
+                    alpha_sum_t = 0;
+                    for hz = 8:13 % 1 is 0 Hz, ONLY ALPHA WAVE => for GFP_alhpa
+                        currentValue = raw_data(channel, time, hz+1);
+                        alpha_sum_t = alpha_sum_t + currentValue;
+                    end
+                    x_alpha_square(time) = alpha_sum_t^2;
+
+                    gfp_theta(time, num) = sum(x_theta_square(1:time))/N;
+                end
+                
+                if mod(channel, 2) == 1 % odd index in GFPLRChannel is left
+                    gfp_alpha_left = gfp_alpha_left + sum(x_alpha_square)/N;
+                else % even index in GFPLRChannel is right
+                    gfp_alpha_right = gfp_alpha_right + sum(x_alpha_square)/N;
+                end
+            end
+            frontal_alpha_asymmetry = gfp_alpha_right - gfp_alpha_left;
+
+            % Output table
+            textHeader = strjoin(columnNamesCell, ',');
+            fid = fopen([filename, '_gfp.csv'], 'w'); 
+            fprintf(fid, '%s\n', textHeader);
+            fclose(fid);
+            % write data to end of file
+            dlmwrite([filename, '_gfp.csv'], gfp_theta, '-append');
+        end
+
+        % ======================================================================
         %> @brief Calculate statistics result and save to CSV
         %>
         %> @param obj instance of the EEGViewer class.
         %> @param filename file name without extension. (will auto append .csv)
         %> @param LRChannel 2D Matrix of [left channel nums, right channel nums]
+        %> @param GFPLRChannel 2D Matrix of [left channel nums, right channel nums] for GFP
         % ======================================================================
-        function Statistics(obj, filename, LRChannel)
+        function Statistics(obj, filename, LRChannel, GFPLRChannel)
+            if nargin < 4 % if not assign GFPLRChannel, use LRChannel
+                GFPLRChannel = LRChannel;
+            end
 
             numchannels = 8;
 
@@ -407,7 +483,7 @@ classdef EEGViewer < handle
 
                 sumForSingleChannel = 0;
                 for time = 1:obj.totalsecond
-                    for hz = 8:12 % 1 is 0 Hz, ONLY ALPHA WAVE
+                    for hz = 8:13 % 1 is 0 Hz, ONLY ALPHA WAVE
                         currentValue = obj.fftData(channel, time, hz+1);
                         sumForSingleChannel = sumForSingleChannel + currentValue;
                     end
@@ -450,7 +526,7 @@ classdef EEGViewer < handle
 
                 sumForSingleChannel = 0;
                 for time = 1:obj.totalsecond
-                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                    for hz = 1:MAX_HZ % 1 is 0 Hz
                         currentValue = obj.fftData(channel, time, hz+1);
                         sumForSingleChannel = sumForSingleChannel + currentValue;
                     end
@@ -500,7 +576,7 @@ classdef EEGViewer < handle
                 channel = rightChannel(rightIdx);
                 sumForSingleChannel = 0;
                 for time = 1:obj.totalsecond
-                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                    for hz = 1:MAX_HZ % 1 is 0 Hz
                         currentValue = obj.fftData(channel, time, hz+1);
                         sumForSingleChannel = sumForSingleChannel + currentValue;
                     end
@@ -514,7 +590,7 @@ classdef EEGViewer < handle
                 channel = leftChannel(leftIdx);
                 sumForSingleChannel = 0;
                 for time = 1:obj.totalsecond
-                    for hz = 1:MAX_HZ % 1 is 0 Hz, ONLY ALPHA WAVE
+                    for hz = 1:MAX_HZ % 1 is 0 Hz
                         currentValue = obj.fftData(channel, time, hz+1);
                         sumForSingleChannel = sumForSingleChannel + currentValue;
                     end
@@ -534,17 +610,23 @@ classdef EEGViewer < handle
             AW_Index_Formula = ['1/Np * (', strjoin(rightChannelNameSumSquare, ' + '), ') - 1/Nq * (', strjoin(leftChannelNameSumSquare, ' + '), ')'];
 
 
+            %% Frontal Alpha Asymmetry
+            % Calculate GFP_theta and plot. Return the frontal alpha asymmetry data
+            Frontal_Alpha_Asymmetry = obj.GlobalFieldPower(filename, GFPLRChannel);
+            Frontal_Alpha_Asymmetry_Formula = 'GFPalpha_right - GFPalpha_left';
+
+
             %% Combine results
             Name = {'Right Frontal Cortical Asymmetry (alpha)'; 'Frontal Brain Asymmetry'; 'EEG Alpha Synchronization';...
-                    'Posterior Resting State EEG Asymmetries'; 'AW Index'};
+                    'Posterior Resting State EEG Asymmetries'; 'AW Index'; 'Frontal Alpha Asymmetry'};
 
-            Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; EEG_Alpha_Synchronization; NaN; AW_Index];
+            Value = [Right_Frontal_Cortical_Asymmetry; Frontal_Brain_Asymmetry; EEG_Alpha_Synchronization; NaN; AW_Index; Frontal_Alpha_Asymmetry];
 
-            Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; EEG_Alpha_Synchronization_Formula; NaN; AW_Index_Formula};
+            Formula = {Right_Frontal_Cortical_Asymmetry_Formula; Frontal_Brain_Asymmetry_Formula; EEG_Alpha_Synchronization_Formula; NaN; AW_Index_Formula; Frontal_Alpha_Asymmetry_Formula};
 
             Result = table(Name, Value, Formula) % Output Table
 
-            writetable(Result, [filename, '.csv']);
+            writetable(Result, [filename, '_stat.csv']);
         end
 
         % ======================================================================
@@ -581,9 +663,9 @@ classdef EEGViewer < handle
                 [B, I] = sort(channel_abs_diff, 'descend');
                 channel_topN_time{channel} = I(1:N);
                 channel_topN_sumValue{channel} = mean_of_channel(I(1:N)+1); % get top N of original value
-                disp([channelName, ' top-', num2str(N), ' is about at time (sec):'])
+                disp([channelName, ' top-', num2str(N), ' differentials are about at time (sec):'])
                 disp(channel_topN_time{channel})
-                disp(['and with mean of values'])
+                disp(['and the mean of the channel values'])
                 disp(channel_topN_sumValue{channel})
             end
         end
@@ -1421,7 +1503,7 @@ classdef EEGViewer < handle
             if mod(length(channels), 2) == 1
                 error('Channels amount must be even number')
             end
-            if nargin < 4
+            if nargin < 3
                 % Default 2 times speed
                 speed = 2;
             end
